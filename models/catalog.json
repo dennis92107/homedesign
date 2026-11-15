@@ -1,0 +1,66 @@
+{
+  "models": [
+    {
+      "id": "local:glam_velvet_sofa",
+      "name": "絲絨三人沙發（Wayfair）",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/glam_velvet_sofa.glb",
+      "source": "khronos",
+      "rotate": 0,
+      "note": "CC BY 4.0 · Wayfair LLC / Eric Chadwick · Khronos glTF-Sample-Assets"
+    },
+    {
+      "id": "local:sheen_chair",
+      "name": "絲絨金屬腳單椅（Wayfair）",
+      "type": "armchair",
+      "types": [
+        "armchair"
+      ],
+      "file": "assets/models/sheen_chair.glb",
+      "source": "khronos",
+      "rotate": 0,
+      "note": "CC BY 4.0 · Wayfair LLC · Khronos glTF-Sample-Assets"
+    },
+    {
+      "id": "local:abo_B075X4QMW7",
+      "name": "Rivet 中世紀絲絨沙發",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/abo_B075X4QMW7.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        2.209,
+        0.771,
+        0.895
+      ],
+      "color": "Navy",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/f3/f30d699e.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B07GDSF3MR",
+      "name": "Amazon Brand - Rivet Round Coffee Table with Solid Wood Legs",
+      "type": "coffee_table",
+      "types": [
+        "coffee_table"
+      ],
+      "file": "assets/models/abo_B07GDSF3MR.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.8,
+        0.36,
+        0.8
+      ],
+      "color": "Walnut",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/32/32cd9937.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    }
+  ]
+}

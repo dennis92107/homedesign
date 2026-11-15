@@ -1,0 +1,143 @@
+{
+  "name": "現代輕奢",
+  "description": "暖灰牆面、大理石地磚、墨綠絲絨沙發、香檳金屬細節，飯店質感。",
+  "palette": [
+    "#dcd6ce",
+    "#efece8",
+    "#2f4a3f",
+    "#b89a63",
+    "#3a3633"
+  ],
+  "references": [],
+  "wall": {
+    "material": "paint",
+    "color": "#dcd6ce"
+  },
+  "exteriorWall": "#cfc8bf",
+  "floor": {
+    "material": "marble",
+    "color": "#eeebe6",
+    "tileSize": 90
+  },
+  "ceiling": {
+    "color": "#f7f5f2"
+  },
+  "rooms": {
+    "bedroom": {
+      "floor": {
+        "material": "herringbone",
+        "color": "#9b7655",
+        "plankWidth": 12,
+        "plankLength": 60
+      },
+      "wall": {
+        "material": "paint",
+        "color": "#cfc6bb"
+      }
+    },
+    "bathroom": {
+      "floor": {
+        "material": "marble",
+        "color": "#e8e4de",
+        "tileSize": 60
+      },
+      "wall": {
+        "material": "marble",
+        "color": "#f0ede8",
+        "tileSize": 120
+      }
+    },
+    "living": {
+      "wall": {
+        "material": "woodPanel",
+        "color": "#7a5a40",
+        "slat": 3,
+        "gap": 1
+      }
+    }
+  },
+  "doors": {
+    "color": "#3a3633"
+  },
+  "windows": {
+    "frameColor": "#5e5a55",
+    "metalFrame": true
+  },
+  "materials": {
+    "wood": "#7a5a40",
+    "woodDark": "#3a2b20",
+    "fabric": {
+      "color": "#2f4a3f",
+      "texture": "fabric",
+      "roughness": 0.75
+    },
+    "fabricAlt": "#c9b9a2",
+    "accent": "#b89a63",
+    "metal": {
+      "color": "#b89a63",
+      "metalness": 0.9,
+      "roughness": 0.25
+    },
+    "stone": {
+      "color": "#efece8",
+      "texture": "marble",
+      "roughness": 0.12
+    },
+    "cabinet": "#3a3633",
+    "countertop": {
+      "color": "#f1eeea",
+      "texture": "marble",
+      "roughness": 0.1
+    },
+    "bedding": "#ece6dc",
+    "pot": "#e9e4dc"
+  },
+  "furniture": {
+    "sofa": "rounded",
+    "legs": "metal",
+    "chair": "upholstered",
+    "bed": "upholstered",
+    "tableTop": "stone",
+    "handles": "metal"
+  },
+  "models": {
+    "coffee_table": "coffee_table_round_01",
+    "sideboard": "modern_wooden_cabinet",
+    "armchair": "mid_century_lounge_chair",
+    "chair": "dining_chair_02"
+  },
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#d8d0c4",
+      "accent": "#b89a63",
+      "pattern": "abstract"
+    },
+    "plants": true,
+    "curtains": {
+      "enabled": true,
+      "color": "#bdb3a6",
+      "sheer": false,
+      "length": "floor"
+    },
+    "pendant": "linear",
+    "artPalette": [
+      "#2f4a3f",
+      "#b89a63",
+      "#3a3633",
+      "#efe9df"
+    ]
+  },
+  "lighting": {
+    "exposure": 1.0,
+    "sunIntensity": 2.8,
+    "sunColor": "#fff3e6",
+    "ambient": 0.55,
+    "environment": 0.45,
+    "room": {
+      "color": "#ffe4c2",
+      "intensity": 4.5
+    },
+    "background": "#e6e6e4"
+  }
+}

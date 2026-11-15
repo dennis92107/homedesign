@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "style": {
+    "rooms": {
+      "主臥": {
+        "floor": {
+          "material": "herringbone",
+          "color": "#d7b98e",
+          "plankWidth": 12,
+          "plankLength": 60
+        }
+      }
+    },
+    "wallFaces": {
+      "主臥|3|P": {
+        "material": "woodPanel",
+        "color": "#6b4f3a",
+        "slat": 4
+      }
+    }
+  },
+  "furniture": {
+    "sofa_1": {
+      "model": "local:abo_B075X4QMW7",
+      "modelColors": {
+        "B075X4QMW7_MAT_MR#0": "#c9962b"
+      }
+    },
+    "armchair_1": {
+      "model": "local:sheen_chair",
+      "modelColors": {
+        "fabric Mystere Mango Velvet": "#2f5d50"
+      }
+    },
+    "coffee_table_1": {
+      "model": "local:abo_B07GDSF3MR"
+    }
+  },
+  "added": [
+    {
+      "id": "add_mwhibr9w",
+      "type": "armchair",
+      "x": 300,
+      "y": 78,
+      "rotation": 30,
+      "model": "mid_century_lounge_chair"
+    }
+  ],
+  "hiddenCategories": []
+}

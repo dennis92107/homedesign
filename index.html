@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow">
+<title>HomeDesign 3D</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 15 16 5l12 10v12H4z' fill='%23b4643c'/%3E%3Crect x='13' y='19' width='6' height='8' fill='%23fff'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f4f2ee; --panel: #ffffffee; --ink: #22201d; --muted: #77716a; --line: #e4dfd7; --accent: #b4643c; --accent-ink: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #181716; --panel: #232120ee; --ink: #eeeae4; --muted: #a39d95; --line: #3a3633; --accent: #e08a5c; --accent-ink: #1a1a1a; }
+  }
+  :root[data-theme="dark"] { --bg: #181716; --panel: #232120ee; --ink: #eeeae4; --muted: #a39d95; --line: #3a3633; --accent: #e08a5c; --accent-ink: #1a1a1a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font: 14px/1.5 "Noto Sans TC", system-ui, sans-serif; }
+  #viewport { position: fixed; inset: 0; right: 340px; transition: right .2s, box-shadow .3s; }
+  body.panel-hidden #viewport { right: 0; }
+  #viewport.flash { box-shadow: inset 0 0 0 4px var(--accent); }
+  #viewport canvas { display: block; touch-action: none; }
+  .label-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+  /* 3D 家具拖曳：距離標示與資訊 */
+  .fd-hud { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+  .fd-hud span { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 11px; line-height: 1; padding: 3px 6px; border-radius: 6px; }
+  .fd-dist { background: #2a7de1; color: #fff; font-weight: 600; }
+  .fd-info { background: #000c; color: #fff; }
+  .fd-info.warn { background: #e5484d; }
+  body.plan-editing .fd-hud, body.pt .fd-hud { display: none !important; }
+  .room-label { background: #ffffffd9; color: #2b2724; padding: 3px 9px; border-radius: 8px; text-align: center; font-size: 12px; box-shadow: 0 1px 4px #0002; }
+  .room-label b { display: block; font-size: 13px; }
+  .room-label span { color: #6e675f; white-space: nowrap; }
+
+  aside { position: fixed; top: 0; right: 0; bottom: 0; width: 340px; background: var(--panel); backdrop-filter: blur(10px); border-left: 1px solid var(--line); overflow-y: auto; padding: 18px 18px 40px; transition: transform .2s; }
+  body.panel-hidden aside { transform: translateX(100%); }
+  h1 { font-size: 18px; margin: 0 0 2px; letter-spacing: .02em; }
+  h2 { font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--muted); margin: 20px 0 8px; text-transform: uppercase; }
+  .sub { color: var(--muted); font-size: 12px; margin: 0; }
+  select, button { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+  select { width: 100%; margin-bottom: 8px; background: var(--bg); }
+  button { cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seg button.active, button.wide.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button.wide { width: 100%; font-weight: 500; }
+  #planEditor { position: absolute; inset: 0; z-index: 4; background: #f7f6f3; }
+  #peSvg { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; cursor: crosshair; }
+  .pe-grid line { stroke: #d9d5ce; }
+  .pe-wall, .pe-room, .pe-opening, .pe-furn { cursor: pointer; }
+  .pe-furn.hidden { opacity: .35; }
+  .pe-ftext { fill: #6b625a; pointer-events: none; }
+  .pe-rtext { fill: #3a342f; font-weight: 700; pointer-events: none; paint-order: stroke; stroke: #fffc; stroke-width: 3px; }
+  .pe-handle { fill: #fff; stroke: #e8692e; stroke-width: 2; vector-effect: non-scaling-stroke; cursor: grab; }
+  .pe-handle.on, .pe-handle.rot { fill: #e8692e; }
+  .pe-tools { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .pe-tools button { background: #fffffff0; color: #2b2724; border-color: #d9d3ca; padding: 5px 9px; font-size: 13px; }
+  .pe-tools button.active { background: #e8692e; color: #fff; border-color: #e8692e; }
+  .pe-tools .sep { flex: 0 0 8px; }
+  .pe-tools .pe-close { margin-left: auto; font-weight: 700; }
+  .pe-chk { font-size: 12px; color: #4a443e; background: #fffffff0; border: 1px solid #d9d3ca; border-radius: 8px; padding: 4px 8px; display: inline-flex; gap: 4px; align-items: center; }
+  .pe-hint { position: absolute; left: 10px; bottom: 10px; right: 10px; font-size: 12px; color: #4a443e; background: #ffffffe8; border-radius: 8px; padding: 6px 10px; pointer-events: none; }
+  body.plan-editing #hint, body.plan-editing #togglePanel, body.plan-editing .label-layer { display: none !important; }
+  #planRoot .field input[type=number] { width: calc(100% - 34px); }
+  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin: 14px -18px 10px; padding: 0 18px; border-bottom: 1px solid var(--line); position: sticky; top: -18px; background: var(--panel); z-index: 2; }
+  .tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 9px 2px; color: var(--muted); }
+  .tabs button.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 700; }
+  .hint { font-size: 12px; color: var(--muted); margin: 6px 0 10px; }
+  .hint code { font-size: 11px; }
+  .row-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+  .row-actions > * { flex: 1; min-width: 0; }
+  .row-actions.small button { padding: 4px 6px; font-size: 12px; }
+  .warn-text { color: #e5484d; font-weight: 600; }
+  #syncMode { margin-bottom: 4px; }
+  /* 公司版（靜態網站、本機模式）不能匯入模型：需要 server.py 下載與寫檔 */
+  body.local-mode .lib-toggle, body.local-mode .lib, body.local-mode .glb-import { display: none !important; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.link { border: 0; padding: 0; background: none; color: var(--accent); font-size: 12px; text-decoration: underline; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 10px 0; background: var(--bg); }
+  .lbl { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin: 10px 0 4px; }
+  .field { display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 8px; margin: 6px 0; font-size: 13px; }
+  .field > span { color: var(--muted); }
+  .field select, .field input[type=number], .field input[type=text] { width: 100%; margin: 0; padding: 5px 8px; }
+  .field input[type=color] { width: 48px; height: 28px; padding: 0 2px; border: 1px solid var(--line); border-radius: 6px; background: none; vertical-align: middle; }
+  .field input[type=range] { width: calc(100% - 44px); vertical-align: middle; }
+  .field small { color: var(--muted); margin-left: 4px; }
+  label.inline { display: inline-flex; gap: 6px; align-items: center; }
+  input[type=number], input[type=text] { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
+  .badge { font-size: 11px; padding: 1px 6px; border-radius: 99px; background: var(--line); color: var(--muted); white-space: nowrap; }
+  .badge.custom { background: var(--accent); color: var(--accent-ink); }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+  .chip { font-size: 12px; padding: 3px 9px; border-radius: 99px; text-decoration: line-through; color: var(--muted); }
+  .chip.on { text-decoration: none; color: var(--ink); border-color: var(--accent); }
+  .flist { margin-top: 8px; }
+  .fgroup-h { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--muted); margin: 10px 0 2px; }
+  .frow { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .frow:hover { background: var(--line); }
+  .frow.sel { outline: 1.5px solid var(--accent); }
+  .frow em { font-style: normal; color: var(--muted); font-size: 12px; }
+  .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 11px; color: var(--muted); }
+  .grid4 label { display: flex; flex-direction: column; gap: 2px; }
+  .grid4 input { width: 100%; padding: 4px 5px; font-size: 12px; }
+  .rotbtns { display: flex; gap: 4px; align-items: end; }
+  .rotbtns button { flex: 1; padding: 4px; }
+  .region-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; border: 1px solid #0003; vertical-align: middle; }
+  .lib-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; max-height: 360px; overflow-y: auto; }
+  .lib-card { border: 1px solid var(--line); border-radius: 8px; padding: 4px; cursor: pointer; font-size: 11px; line-height: 1.3; background: var(--panel); text-align: left; color: var(--ink); }
+  .lib-card:hover { border-color: var(--accent); }
+  .lib-card img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; border-radius: 5px; display: block; }
+  .lib-card span { display: block; max-height: 2.6em; overflow: hidden; margin-top: 3px; }
+  .lib-card.busy { opacity: .5; pointer-events: none; }
+  details.removed { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  #ptInfo { display: none; margin-top: 6px; }
+  body.pt #ptInfo { display: block; }
+  .toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+  .toggles label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+  .toggles input:disabled + span { opacity: .4; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .row { display: flex; justify-content: space-between; align-items: center; }
+  #palette { display: flex; gap: 4px; margin: 8px 0; }
+  #palette span { flex: 1; height: 22px; border-radius: 5px; border: 1px solid #0001; }
+  #styleDesc { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+  #refs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  #refs a { position: relative; display: block; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; background: var(--line); color: var(--muted); text-decoration: none; }
+  #refs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #refs em { position: absolute; left: 0; right: 0; bottom: 0; font-size: 11px; font-style: normal; padding: 2px 6px; background: #000a; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #refs a.broken img { display: none; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 3px 0; border-bottom: 1px solid var(--line); }
+  td:not(:first-child) { text-align: right; color: var(--muted); }
+  tr.total td { font-weight: 700; color: var(--ink); border-bottom: 0; }
+  #status { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  #status::before { content: "● "; color: #4caf6a; }
+  #status.err { color: #c0392b; } #status.err::before { color: #c0392b; }
+  .actions { display: flex; gap: 6px; margin-top: 10px; }
+  .actions button { flex: 1; }
+  #togglePanel { position: fixed; top: 12px; right: 352px; z-index: 5; background: var(--panel); transition: right .2s; }
+  body.panel-hidden #togglePanel { right: 12px; }
+  #walkHelp { position: fixed; left: 16px; bottom: 16px; background: #000b; color: #fff; padding: 8px 12px; border-radius: 10px; font-size: 12px; display: none; pointer-events: none; }
+  body.walking #walkHelp { display: block; }
+  #hint { position: fixed; left: 16px; bottom: 16px; background: var(--panel); padding: 6px 10px; border-radius: 10px; font-size: 12px; color: var(--muted); border: 1px solid var(--line); }
+  body.walking #hint { display: none; }
+  kbd { font: 11px ui-monospace, monospace; border: 1px solid #fff5; border-radius: 4px; padding: 0 4px; }
+  @media (max-width: 760px) {
+    #viewport { right: 0; bottom: 45vh; }
+    aside { top: 55vh; width: 100%; border-left: 0; border-top: 1px solid var(--line); }
+    body.panel-hidden #viewport { bottom: 0; }
+    body.panel-hidden aside { transform: translateY(100%); }
+    #togglePanel, body.panel-hidden #togglePanel { right: 16px; }
+    #hint { display: none; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/",
+  "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/",
+  "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.16/src/index.js",
+  "three-gpu-pathtracer": "https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.27/src/index.js"
+} }
+</script>
+</head>
+<body>
+<div id="viewport"><div id="planEditor" hidden></div></div>
+<button id="togglePanel" title="顯示/隱藏面板">☰</button>
+<div id="hint">拖曳旋轉 · 滾輪縮放 · 右鍵平移 · <b>雙擊地板</b>進入漫遊 · <b>點家具</b>後可直接拖曳、拉圓環轉向（<kbd>Shift</kbd> 不吸附、方向鍵微調、<kbd>R</kbd> 轉 90°、<kbd>Ctrl</kbd>+<kbd>Z</kbd> 復原）</div>
+<div id="walkHelp"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動 · <kbd>Shift</kbd> 快走 · 拖曳滑鼠轉頭 · <kbd>Q</kbd>/<kbd>E</kbd> 轉向 · 滾輪改視角 · <kbd>Esc</kbd> 離開</div>
+
+<aside>
+  <h1>HomeDesign 3D</h1>
+  <p class="sub">平面圖 → 3D 空間 · 參考圖 → 裝潢風格</p>
+  <div id="status">載入中…</div>
+
+  <div class="seg" style="margin-top:12px">
+    <button data-view="orbit">立體鳥瞰</button>
+    <button data-view="top">平面俯視</button>
+    <button data-view="walk">室內漫遊</button>
+  </div>
+  <button id="ptBtn" class="wide" style="margin-top:6px">✨ 真實渲染（光線追蹤）</button>
+  <div id="ptInfo" class="sub">靜止時逐步收斂成照片級畫面，移動視角會重新計算 · <span id="ptSamples"></span></div>
+
+  <nav class="tabs">
+    <button data-tab="template">樣板</button>
+    <button data-tab="layout">格局</button>
+    <button data-tab="custom">材質</button>
+    <button data-tab="furniture">家具</button>
+    <button data-tab="settings">顯示</button>
+  </nav>
+
+  <section data-panel="template">
+    <h2>平面圖</h2>
+    <select id="planSelect"></select>
+    <h2>裝潢樣板</h2>
+    <select id="styleSelect"></select>
+    <b id="styleName"></b>
+    <div id="palette"></div>
+    <p id="styleDesc"></p>
+    <div id="refsBox" hidden><h2>參考圖</h2><div id="refs"></div></div>
+    <h2>空間面積 · <span id="planName" style="text-transform:none;letter-spacing:0"></span></h2>
+    <table id="rooms"></table>
+    <div class="actions"><button id="shot">📷 截圖下載</button></div>
+  </section>
+
+  <section data-panel="layout" hidden><div id="planRoot"></div></section>
+  <section data-panel="custom" hidden><div id="customRoot"></div></section>
+  <section data-panel="furniture" hidden><div id="furnRoot"></div></section>
+
+  <section data-panel="settings" hidden>
+    <h2>畫質</h2>
+    <div class="toggles">
+      <label><input type="checkbox" id="pbrToggle"><span>真實素材/模型</span></label>
+      <label><input type="checkbox" id="aoToggle"><span>環境光遮蔽</span></label>
+    </div>
+    <div id="assetStatus" class="sub"></div>
+    <h2>顯示</h2>
+    <div class="toggles">
+      <label><input type="checkbox" id="cutToggle"><span>剖切牆面</span></label>
+      <label><input type="checkbox" id="labelToggle"><span>空間標籤</span></label>
+      <label><input type="checkbox" id="ceilToggle"><span>天花板</span></label>
+      <label><input type="checkbox" id="underlayToggle"><span>原圖疊圖</span></label>
+      <label><input type="checkbox" id="liveToggle"><span>即時同步</span></label>
+    </div>
+    <h2>家裡 ↔ 公司</h2>
+    <p id="syncMode" class="sub"></p>
+    <div class="row-actions sync-actions">
+      <button id="exportBtn">⬇ 匯出</button>
+      <button id="importBtn">⬆ 匯入變更</button>
+    </div>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+    <p class="sub">家裡匯出「完整快照」→ 公司匯入後繼續改 → 公司匯出「變更」→ 回家匯入。兩邊都有改的會自動合併。</p>
+    <button id="clearLocalBtn" class="wide" hidden>清除這台電腦的本機修改</button>
+    <h2>日照時間</h2>
+    <div class="row"><span class="sub">清晨 → 夜晚</span><b id="hourLabel">15:00</b></div>
+    <input type="range" id="hour" min="5" max="22" step="0.5" value="15" />
+  </section>
+</aside>
+<script type="module" src="app/main.js"></script>
+</body>
+</html>

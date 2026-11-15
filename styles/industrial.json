@@ -1,0 +1,146 @@
+{
+  "name": "工業風 Loft",
+  "description": "清水模牆、深色人字拼地板、焦糖皮革沙發、黑鐵框窗與紅磚主牆。",
+  "palette": [
+    "#9e9c97",
+    "#5a3e2b",
+    "#9a5b34",
+    "#1f1f1f",
+    "#a14f36"
+  ],
+  "references": [],
+  "wall": {
+    "material": "concrete",
+    "color": "#a9a7a2"
+  },
+  "exteriorWall": "#8f8d88",
+  "floor": {
+    "material": "herringbone",
+    "color": "#6b4a33",
+    "plankWidth": 10,
+    "plankLength": 60
+  },
+  "ceiling": {
+    "color": "#8f8e8a"
+  },
+  "rooms": {
+    "living": {
+      "wall": {
+        "material": "brick",
+        "color": "#9c5a43",
+        "color2": "#cfc6b8"
+      }
+    },
+    "bathroom": {
+      "floor": {
+        "material": "tile",
+        "color": "#3a3a3a",
+        "tileSize": 20,
+        "grout": "#666"
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#e9e7e2",
+        "tileSize": 15,
+        "grout": "#999"
+      }
+    },
+    "kitchen": {
+      "floor": {
+        "material": "concrete",
+        "color": "#8e8c87"
+      }
+    }
+  },
+  "doors": {
+    "color": "#2a2826"
+  },
+  "windows": {
+    "frameColor": "#1b1b1b",
+    "metalFrame": true
+  },
+  "materials": {
+    "wood": "#6e4b33",
+    "woodDark": "#3d2a1d",
+    "fabric": "#5d5e5f",
+    "fabricAlt": "#8d7f6b",
+    "leather": {
+      "color": "#94562f",
+      "roughness": 0.45
+    },
+    "accent": "#a14f36",
+    "metal": {
+      "color": "#161616",
+      "metalness": 0.7,
+      "roughness": 0.45
+    },
+    "cabinet": "#2e2e2e",
+    "countertop": {
+      "color": "#7d7b77",
+      "texture": "concrete"
+    },
+    "bedding": "#7f7a72",
+    "white": "#e6e3dd",
+    "pot": "#4a4a4a",
+    "lampshade": {
+      "color": "#f8e2b5",
+      "emissive": "#ffb860",
+      "emissiveIntensity": 1.4
+    }
+  },
+  "furniture": {
+    "sofa": "boxy",
+    "sofaMaterial": "leather",
+    "legs": "metal",
+    "chair": "solid",
+    "bed": "legs",
+    "tableTop": "wood",
+    "handles": "metal"
+  },
+  "models": {
+    "chair": "dining_chair_02",
+    "coffee_table": "modern_coffee_table_01",
+    "side_table": "round_wooden_table_02",
+    "sideboard": "modern_wooden_cabinet",
+    "bookshelf": "steel_frame_shelves_03",
+    "armchair": "mid_century_lounge_chair"
+  },
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#3f3b37",
+      "accent": "#7a6e60",
+      "pattern": "diamond"
+    },
+    "plants": true,
+    "curtains": {
+      "enabled": false
+    },
+    "pendant": "cone",
+    "artPalette": [
+      "#a14f36",
+      "#1f1f1f",
+      "#c9b79c",
+      "#e8e2d8"
+    ],
+    "bookColors": [
+      "#3d2a1d",
+      "#a14f36",
+      "#7d7b77",
+      "#c9b79c",
+      "#1f1f1f"
+    ]
+  },
+  "lighting": {
+    "exposure": 1.05,
+    "sunIntensity": 3.0,
+    "sunColor": "#fff0dc",
+    "ambient": 0.5,
+    "environment": 0.3,
+    "room": {
+      "color": "#ffcf96",
+      "intensity": 5
+    },
+    "background": "#d9dcdc"
+  }
+}

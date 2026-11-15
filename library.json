@@ -1,0 +1,26 @@
+{
+  "plans": [
+    {
+      "name": "範例：兩房兩廳",
+      "file": "plans/sample-2br.json"
+    }
+  ],
+  "styles": [
+    {
+      "name": "北歐簡約",
+      "file": "styles/nordic.json"
+    },
+    {
+      "name": "日式無印 Japandi",
+      "file": "styles/japandi.json"
+    },
+    {
+      "name": "工業風 Loft",
+      "file": "styles/industrial.json"
+    },
+    {
+      "name": "現代輕奢",
+      "file": "styles/modern-luxe.json"
+    }
+  ]
+}

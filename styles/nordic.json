@@ -1,0 +1,121 @@
+{
+  "name": "北歐簡約",
+  "description": "白牆、淺橡木地板、灰色布沙發、黑色金屬點綴，明亮通透。",
+  "palette": [
+    "#f5f3ef",
+    "#d7b98e",
+    "#b9b7b1",
+    "#2b2b2b",
+    "#7e9180"
+  ],
+  "references": [],
+  "wall": {
+    "material": "paint",
+    "color": "#f5f3ef"
+  },
+  "exteriorWall": "#dcd8d1",
+  "floor": {
+    "material": "wood",
+    "color": "#d7b98e",
+    "plankWidth": 20,
+    "variation": 0.1
+  },
+  "ceiling": {
+    "color": "#fbfaf8"
+  },
+  "rooms": {
+    "bathroom": {
+      "floor": {
+        "material": "tile",
+        "color": "#e7e5e1",
+        "tileSize": 30
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#f4f4f2",
+        "tileSize": 20
+      }
+    },
+    "kitchen": {
+      "floor": {
+        "material": "tile",
+        "color": "#d9d6d0",
+        "tileSize": 60
+      }
+    }
+  },
+  "doors": {
+    "color": "#f4f2ee"
+  },
+  "windows": {
+    "frameColor": "#2b2b2b",
+    "metalFrame": true
+  },
+  "materials": {
+    "wood": "#d2b48c",
+    "woodDark": "#a3825d",
+    "fabric": "#b9b7b1",
+    "fabricAlt": "#e4ded3",
+    "accent": "#7e9180",
+    "metal": {
+      "color": "#222222",
+      "metalness": 0.6,
+      "roughness": 0.4
+    },
+    "cabinet": "#f2f0ec",
+    "countertop": {
+      "color": "#f0eeea",
+      "texture": "marble"
+    },
+    "bedding": "#ece8e0",
+    "pot": "#e8e4dc"
+  },
+  "furniture": {
+    "sofa": "boxy",
+    "legs": "tapered",
+    "chair": "spindle",
+    "bed": "legs",
+    "tableTop": "wood",
+    "handles": "metal"
+  },
+  "models": {
+    "chair": "painted_wooden_chair_01",
+    "side_table": "side_table_01",
+    "bookshelf": "wooden_display_shelves_01",
+    "armchair": "modern_arm_chair_01"
+  },
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#e3ddd2",
+      "accent": "#a59d90",
+      "pattern": "border"
+    },
+    "plants": true,
+    "curtains": {
+      "enabled": true,
+      "color": "#f1ede6",
+      "sheer": true,
+      "length": "floor"
+    },
+    "pendant": "globe",
+    "artPalette": [
+      "#d8b48c",
+      "#7e9180",
+      "#2b2b2b",
+      "#f3efe7"
+    ]
+  },
+  "lighting": {
+    "exposure": 1.0,
+    "sunIntensity": 3.2,
+    "sunColor": "#fff4e2",
+    "ambient": 0.6,
+    "environment": 0.4,
+    "room": {
+      "color": "#ffe9cc",
+      "intensity": 4
+    },
+    "background": "#e9eef1"
+  }
+}

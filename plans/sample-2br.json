@@ -1,0 +1,555 @@
+{
+  "name": "範例：兩房兩廳 + 開放廚房",
+  "units": "cm",
+  "wallHeight": 280,
+  "wallThickness": 12,
+  "exteriorThickness": 20,
+  "cutawayHeight": 120,
+  "underlay": {
+    "image": "inputs/sample-2br.png",
+    "x": -50,
+    "y": -50,
+    "width": 1300,
+    "height": 1000,
+    "opacity": 0.7
+  },
+  "spawn": {
+    "x": 1060,
+    "y": 800,
+    "facing": 90
+  },
+  "walls": [
+    {
+      "a": [
+        0,
+        0
+      ],
+      "b": [
+        1200,
+        0
+      ],
+      "exterior": true
+    },
+    {
+      "a": [
+        1200,
+        0
+      ],
+      "b": [
+        1200,
+        900
+      ],
+      "exterior": true
+    },
+    {
+      "a": [
+        1200,
+        900
+      ],
+      "b": [
+        0,
+        900
+      ],
+      "exterior": true
+    },
+    {
+      "a": [
+        0,
+        900
+      ],
+      "b": [
+        0,
+        0
+      ],
+      "exterior": true
+    },
+    {
+      "a": [
+        0,
+        420
+      ],
+      "b": [
+        950,
+        420
+      ]
+    },
+    {
+      "a": [
+        450,
+        0
+      ],
+      "b": [
+        450,
+        420
+      ]
+    },
+    {
+      "a": [
+        650,
+        0
+      ],
+      "b": [
+        650,
+        420
+      ]
+    },
+    {
+      "a": [
+        950,
+        0
+      ],
+      "b": [
+        950,
+        420
+      ]
+    }
+  ],
+  "openings": [
+    {
+      "type": "window",
+      "wall": 0,
+      "at": 225,
+      "width": 180,
+      "sill": 90,
+      "height": 130
+    },
+    {
+      "type": "window",
+      "wall": 0,
+      "at": 550,
+      "width": 60,
+      "sill": 160,
+      "height": 60
+    },
+    {
+      "type": "window",
+      "wall": 0,
+      "at": 800,
+      "width": 150,
+      "sill": 90,
+      "height": 130
+    },
+    {
+      "type": "window",
+      "wall": 0,
+      "at": 1075,
+      "width": 120,
+      "sill": 110,
+      "height": 100
+    },
+    {
+      "type": "window",
+      "wall": 2,
+      "at": 875,
+      "width": 400,
+      "sill": 0,
+      "height": 230,
+      "panels": 4
+    },
+    {
+      "type": "window",
+      "wall": 2,
+      "at": 275,
+      "width": 160,
+      "sill": 90,
+      "height": 130
+    },
+    {
+      "type": "door",
+      "wall": 1,
+      "at": 760,
+      "width": 100,
+      "height": 215,
+      "hinge": "start",
+      "open": 90
+    },
+    {
+      "type": "door",
+      "wall": 4,
+      "at": 380,
+      "width": 90,
+      "hinge": "end",
+      "swing": "out"
+    },
+    {
+      "type": "door",
+      "wall": 4,
+      "at": 550,
+      "width": 80,
+      "hinge": "start",
+      "swing": "out"
+    },
+    {
+      "type": "door",
+      "wall": 4,
+      "at": 900,
+      "width": 90,
+      "hinge": "end",
+      "swing": "out"
+    }
+  ],
+  "rooms": [
+    {
+      "name": "主臥",
+      "type": "bedroom",
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          450,
+          0
+        ],
+        [
+          450,
+          420
+        ],
+        [
+          0,
+          420
+        ]
+      ]
+    },
+    {
+      "name": "浴室",
+      "type": "bathroom",
+      "polygon": [
+        [
+          450,
+          0
+        ],
+        [
+          650,
+          0
+        ],
+        [
+          650,
+          420
+        ],
+        [
+          450,
+          420
+        ]
+      ]
+    },
+    {
+      "name": "次臥",
+      "type": "bedroom",
+      "polygon": [
+        [
+          650,
+          0
+        ],
+        [
+          950,
+          0
+        ],
+        [
+          950,
+          420
+        ],
+        [
+          650,
+          420
+        ]
+      ]
+    },
+    {
+      "name": "廚房",
+      "type": "kitchen",
+      "polygon": [
+        [
+          950,
+          0
+        ],
+        [
+          1200,
+          0
+        ],
+        [
+          1200,
+          420
+        ],
+        [
+          950,
+          420
+        ]
+      ]
+    },
+    {
+      "name": "客廳",
+      "type": "living",
+      "polygon": [
+        [
+          0,
+          420
+        ],
+        [
+          650,
+          420
+        ],
+        [
+          650,
+          900
+        ],
+        [
+          0,
+          900
+        ]
+      ]
+    },
+    {
+      "name": "餐廳",
+      "type": "dining",
+      "polygon": [
+        [
+          670,
+          450
+        ],
+        [
+          1220,
+          450
+        ],
+        [
+          1220,
+          930
+        ],
+        [
+          670,
+          930
+        ]
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "tv_cabinet_1",
+      "type": "tv_cabinet",
+      "x": 31,
+      "y": 660,
+      "w": 200,
+      "d": 42,
+      "rotation": 270
+    },
+    {
+      "id": "sofa_1",
+      "type": "sofa",
+      "x": 430,
+      "y": 660,
+      "w": 240,
+      "d": 95,
+      "rotation": 90
+    },
+    {
+      "id": "coffee_table_1",
+      "type": "coffee_table",
+      "x": 290,
+      "y": 660,
+      "w": 110,
+      "d": 60,
+      "rotation": 90
+    },
+    {
+      "id": "rug_1",
+      "type": "rug",
+      "x": 270,
+      "y": 660,
+      "w": 300,
+      "d": 220,
+      "rotation": 90
+    },
+    {
+      "id": "armchair_1",
+      "type": "armchair",
+      "x": 185,
+      "y": 500,
+      "w": 80,
+      "d": 85,
+      "rotation": 330
+    },
+    {
+      "id": "side_table_1",
+      "type": "side_table",
+      "x": 430,
+      "y": 512
+    },
+    {
+      "id": "floor_lamp_1",
+      "type": "floor_lamp",
+      "x": 455,
+      "y": 820
+    },
+    {
+      "id": "plant_1",
+      "type": "plant",
+      "x": 600,
+      "y": 855,
+      "kind": "tall",
+      "h": 160
+    },
+    {
+      "id": "dining_table_1",
+      "type": "dining_table",
+      "x": 900,
+      "y": 640,
+      "w": 180,
+      "d": 95,
+      "seats": 6
+    },
+    {
+      "id": "sideboard_1",
+      "type": "sideboard",
+      "x": 925,
+      "y": 867,
+      "w": 180,
+      "d": 45,
+      "rotation": 180
+    },
+    {
+      "id": "shoe_cabinet_1",
+      "type": "shoe_cabinet",
+      "x": 1171,
+      "y": 600,
+      "w": 120,
+      "d": 38,
+      "rotation": 90
+    },
+    {
+      "id": "plant_2",
+      "type": "plant",
+      "x": 1160,
+      "y": 470
+    },
+    {
+      "id": "kitchen_counter_1",
+      "type": "kitchen_counter",
+      "x": 1160,
+      "y": 220,
+      "w": 360,
+      "d": 60,
+      "rotation": 90,
+      "sinkAt": -0.9,
+      "cooktopAt": 0.8
+    },
+    {
+      "id": "fridge_1",
+      "type": "fridge",
+      "x": 991,
+      "y": 48,
+      "w": 75,
+      "d": 70,
+      "rotation": 270
+    },
+    {
+      "id": "bathtub_1",
+      "type": "bathtub",
+      "x": 550,
+      "y": 48,
+      "w": 180,
+      "d": 75
+    },
+    {
+      "id": "toilet_1",
+      "type": "toilet",
+      "x": 609,
+      "y": 190,
+      "rotation": 90
+    },
+    {
+      "id": "vanity_1",
+      "type": "vanity",
+      "x": 619,
+      "y": 300,
+      "w": 90,
+      "d": 50,
+      "rotation": 90
+    },
+    {
+      "id": "bed_1",
+      "type": "bed",
+      "x": 120,
+      "y": 210,
+      "w": 180,
+      "d": 210,
+      "rotation": 270
+    },
+    {
+      "id": "nightstand_1",
+      "type": "nightstand",
+      "x": 32,
+      "y": 88,
+      "rotation": 270
+    },
+    {
+      "id": "nightstand_2",
+      "type": "nightstand",
+      "x": 32,
+      "y": 332,
+      "rotation": 270
+    },
+    {
+      "id": "rug_2",
+      "type": "rug",
+      "x": 150,
+      "y": 210,
+      "w": 240,
+      "d": 170,
+      "rotation": 270
+    },
+    {
+      "id": "art_1",
+      "type": "art",
+      "x": 11,
+      "y": 210,
+      "w": 120,
+      "h": 60,
+      "rotation": 270,
+      "elevation": 125
+    },
+    {
+      "id": "wardrobe_1",
+      "type": "wardrobe",
+      "x": 414,
+      "y": 180,
+      "w": 200,
+      "d": 60,
+      "rotation": 90
+    },
+    {
+      "id": "desk_1",
+      "type": "desk",
+      "x": 800,
+      "y": 40,
+      "w": 140,
+      "d": 60
+    },
+    {
+      "id": "bed_2",
+      "type": "bed",
+      "x": 759,
+      "y": 300,
+      "w": 150,
+      "d": 200,
+      "rotation": 270
+    },
+    {
+      "id": "nightstand_3",
+      "type": "nightstand",
+      "x": 678,
+      "y": 198,
+      "rotation": 270,
+      "lamp": true
+    },
+    {
+      "id": "bookshelf_1",
+      "type": "bookshelf",
+      "x": 926,
+      "y": 200,
+      "w": 100,
+      "d": 35,
+      "h": 200,
+      "rotation": 90
+    }
+  ]
+}

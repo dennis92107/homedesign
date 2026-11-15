@@ -1,0 +1,146 @@
+{
+  "name": "日式無印 Japandi",
+  "description": "米白灰泥牆、原木色家具、低矮床架與亞麻布料，溫暖安靜的侘寂感。",
+  "palette": [
+    "#ece4d6",
+    "#b98c5e",
+    "#d8cdb8",
+    "#6f6a5f",
+    "#8a9a7b"
+  ],
+  "references": [],
+  "wall": {
+    "material": "limewash",
+    "color": "#ebe3d5"
+  },
+  "exteriorWall": "#d6cdbf",
+  "floor": {
+    "material": "wood",
+    "color": "#c49a6c",
+    "plankWidth": 15,
+    "variation": 0.08
+  },
+  "ceiling": {
+    "color": "#f6f1e8"
+  },
+  "rooms": {
+    "bedroom": {
+      "floor": {
+        "material": "wood",
+        "color": "#b58c63",
+        "plankWidth": 15
+      }
+    },
+    "bathroom": {
+      "floor": {
+        "material": "terrazzo",
+        "color": "#e3dccf"
+      },
+      "wall": {
+        "material": "limewash",
+        "color": "#e0d8ca"
+      }
+    },
+    "kitchen": {
+      "floor": {
+        "material": "terrazzo",
+        "color": "#e6dfd2"
+      }
+    },
+    "living": {
+      "wall": {
+        "material": "limewash",
+        "color": "#e9e0d0"
+      }
+    }
+  },
+  "doors": {
+    "color": "#c9a57e"
+  },
+  "windows": {
+    "frameColor": "#8a6a4a"
+  },
+  "materials": {
+    "wood": "#c39a6b",
+    "woodDark": "#8a6a4a",
+    "fabric": "#ddd3c2",
+    "fabricAlt": "#a8a28f",
+    "accent": "#8a9a7b",
+    "metal": {
+      "color": "#3b3631",
+      "metalness": 0.5,
+      "roughness": 0.5
+    },
+    "cabinet": {
+      "color": "#c9a57e",
+      "grain": true
+    },
+    "countertop": {
+      "color": "#ddd6c9",
+      "texture": "terrazzo"
+    },
+    "bedding": "#e6dccb",
+    "pot": "#b4a58f",
+    "lampshade": {
+      "color": "#f4ead6",
+      "emissive": "#ffcf8a",
+      "emissiveIntensity": 1.0
+    }
+  },
+  "furniture": {
+    "sofa": "rounded",
+    "legs": "plinth",
+    "chair": "solid",
+    "bed": "platform",
+    "tableTop": "wood",
+    "handles": "none"
+  },
+  "models": {
+    "side_table": "side_table_01",
+    "bookshelf": "wooden_display_shelves_01",
+    "sideboard": "modern_wooden_cabinet",
+    "coffee_table": "modern_coffee_table_01",
+    "plant": "potted_plant_01"
+  },
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#d9cdb8",
+      "accent": "#b9aa90",
+      "pattern": "stripe"
+    },
+    "plants": true,
+    "curtains": {
+      "enabled": true,
+      "color": "#e4dac8",
+      "sheer": false,
+      "length": "floor"
+    },
+    "pendant": "rattan",
+    "artPalette": [
+      "#6f6a5f",
+      "#b98c5e",
+      "#8a9a7b",
+      "#efe8dc"
+    ],
+    "bookColors": [
+      "#c9b79c",
+      "#8a7a66",
+      "#e5ddd0",
+      "#6f6a5f",
+      "#a89a82"
+    ]
+  },
+  "lighting": {
+    "exposure": 1.0,
+    "sunIntensity": 3.0,
+    "sunColor": "#ffe9cf",
+    "ambient": 0.55,
+    "environment": 0.35,
+    "room": {
+      "color": "#ffd9a6",
+      "intensity": 4
+    },
+    "background": "#ece7df"
+  }
+}
