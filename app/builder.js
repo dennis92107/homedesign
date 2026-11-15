@@ -34,6 +34,153 @@ export function pointInPoly([px, py], poly) {
 }
 function roomAt(plan, p) { return (plan.rooms || []).find((r) => pointInPoly(p, r.polygon)); }
 
+// ---------- wall joints ----------
+// Walls used to be boxes that all ran half a thickness past both ends, so at every corner two boxes overlapped and
+// their faces lay in the same plane → z-fighting (flicker). Like floor-plan editors do (offset each wall's two side
+// lines by ±t/2 and intersect them with the neighbours' side lines), we now compute where each SIDE of each wall
+// ends:  L/X/Y corners → mitred (side lines intersected, walls sorted by angle around the joint),
+//        straight continuation → butt at the joint point,  T (end on another wall's middle) → stop at that wall's face,
+//        duplicated collinear walls → the thinner one starts where the thicker one ends,  free end → old t/2 overhang.
+// Result per wall (cm along the wall from a): { P0, N0, P1, N1, T0, T1, lower } — P/N = +/- side (+Z in wall space).
+const JOINT_TOL = 3; // cm: wall ends closer than this belong to the same joint
+function lineHit(px, py, dx, dy, qx, qy, ex, ey) {
+  const den = dx * ey - dy * ex;
+  if (Math.abs(den) < 1e-9) return null;
+  const t = ((qx - px) * ey - (qy - py) * ex) / den;
+  return [px + dx * t, py + dy * t];
+}
+export function wallJoints(plan) {
+  const defT = plan.wallThickness || 12, extT = plan.exteriorThickness || 20;
+  const W = (plan.walls || []).map((w, i) => {
+    const [ax, ay] = w.a, [bx, by] = w.b; const L = Math.hypot(bx - ax, by - ay) || 1;
+    const t = w.thickness || (w.exterior ? extT : defT);
+    return { i, w, ax, ay, bx, by, L, ux: (bx - ax) / L, uy: (by - ay) / L, t, ok: L >= 1 && !w.railing && w.extend == null };
+  });
+  const res = W.map((o) => { const e = o.w.extend ?? o.t / 2; return { P0: -e, N0: -e, P1: o.L + e, N1: o.L + e, T0: false, T1: false, lower: 0 }; });
+  // set the extent of one side of one end: sigma = distance from the end point along the outgoing direction
+  const setEnd = (e, plusSide, sigma) => {
+    const r = res[e.o.i];
+    if (e.end === 0) r[plusSide ? 'P0' : 'N0'] = sigma; else r[plusSide ? 'N1' : 'P1'] = e.o.L - sigma;
+  };
+  const ends = [];
+  for (const o of W) if (o.ok) {
+    ends.push({ o, end: 0, x: o.ax, y: o.ay, dx: o.ux, dy: o.uy });
+    ends.push({ o, end: 1, x: o.bx, y: o.by, dx: -o.ux, dy: -o.uy });
+  }
+  const done = new Set();
+  for (const e of ends) {
+    if (done.has(e)) continue;
+    const joint = ends.filter((f) => !done.has(f) && Math.hypot(f.x - e.x, f.y - e.y) <= JOINT_TOL);
+    joint.forEach((f) => done.add(f));
+    for (const f of joint) f.ang = Math.atan2(f.dy, f.dx);
+    // duplicated collinear walls leaving the joint in the same direction: keep the thickest, trim the others
+    const prim = [];
+    for (const f of [...joint].sort((a, b) => b.o.t - a.o.t || a.o.i - b.o.i)) {
+      const p = prim.find((q) => Math.abs(Math.atan2(Math.sin(q.ang - f.ang), Math.cos(q.ang - f.ang))) < 0.05);
+      if (!p) { prim.push(f); continue; }
+      const d = Math.min(p.o.L, f.o.L);
+      if (d < f.o.L - 1) { setEnd(f, true, d); setEnd(f, false, d); }
+      res[f.o.i].lower = Math.max(res[f.o.i].lower, 1); // its cap would lie in the thicker wall's cap plane
+    }
+    if (prim.length >= 2) {
+      prim.sort((a, b) => a.ang - b.ang);
+      const n = prim.length;
+      for (let k = 0; k < n; k++) {
+        const f = prim[k], g = prim[(k + 1) % n]; // g is the next wall counter-clockwise (+perp side of f)
+        let da = g.ang - f.ang; if (da <= 0) da += Math.PI * 2;
+        const fx = -f.dy, fy = f.dx, gx = -g.dy, gy = g.dx; // perpendiculars (+side)
+        let sf = 0, sg = 0; // butt at the joint for straight continuations
+        if (!(n === 2 && Math.abs(da - Math.PI) < 0.05)) {
+          const X = lineHit(f.x + fx * f.o.t / 2, f.y + fy * f.o.t / 2, f.dx, f.dy, g.x - gx * g.o.t / 2, g.y - gy * g.o.t / 2, g.dx, g.dy);
+          if (X) {
+            const lim = 3 * Math.max(f.o.t, g.o.t); // very acute angles: don't let the mitre run away
+            sf = Math.max(-lim, Math.min(lim, (X[0] - f.x) * f.dx + (X[1] - f.y) * f.dy));
+            sg = Math.max(-lim, Math.min(lim, (X[0] - g.x) * g.dx + (X[1] - g.y) * g.dy));
+          }
+        }
+        setEnd(f, true, sf); setEnd(g, false, sg);
+      }
+      continue;
+    }
+    // a single wall ends here: T-joint if it ends on another wall's body → stop at that wall's near face
+    const f = prim[0];
+    let best = null;
+    for (const v of W) {
+      if (v === f.o || v.w.railing) continue;
+      const nx = -v.uy, ny = v.ux;
+      const off = (f.x - v.ax) * nx + (f.y - v.ay) * ny, along = (f.x - v.ax) * v.ux + (f.y - v.ay) * v.uy;
+      if (Math.abs(off) > v.t / 2 + JOINT_TOL || along < -JOINT_TOL || along > v.L + JOINT_TOL) continue;
+      const cos = f.dx * nx + f.dy * ny; // body direction vs the other wall's normal
+      if (Math.abs(cos) < 0.17) continue; // (nearly) parallel: not a T
+      if (!best || Math.abs(off) < best.off) best = { v, nx, ny, sgn: Math.sign(cos), off: Math.abs(off) };
+    }
+    if (!best) continue; // free end: keep the default overhang
+    const { v, nx, ny, sgn } = best;
+    const qx = v.ax + nx * sgn * v.t / 2, qy = v.ay + ny * sgn * v.t / 2; // near face line
+    for (const plus of [true, false]) {
+      const s = plus ? 1 : -1, px = -f.dy * s * f.o.t / 2, py = f.dx * s * f.o.t / 2;
+      const X = lineHit(f.x + px, f.y + py, f.dx, f.dy, qx, qy, v.ux, v.uy);
+      if (X) setEnd(f, plus, Math.max(-f.o.t, Math.min(f.o.L / 2, (X[0] - f.x) * f.dx + (X[1] - f.y) * f.dy)));
+    }
+    res[f.o.i][f.end === 0 ? 'T0' : 'T1'] = true;
+  }
+  // walls that still overlap a non-joined wall (e.g. a thick column drawn over an exterior wall): the thinner one's
+  // cap is dropped 1 mm under the thicker one's so the two tops never share a plane (priority like CAD wall joins)
+  const quad = (o) => { const r = res[o.i], nx = -o.uy * o.t / 2, ny = o.ux * o.t / 2;
+    return [[o.ax + o.ux * r.P0 + nx, o.ay + o.uy * r.P0 + ny], [o.ax + o.ux * r.P1 + nx, o.ay + o.uy * r.P1 + ny],
+      [o.ax + o.ux * r.N1 - nx, o.ay + o.uy * r.N1 - ny], [o.ax + o.ux * r.N0 - nx, o.ay + o.uy * r.N0 - ny]]; };
+  const sep = (A, B) => { // separating axis test for two convex quads (shrunk by 0.5 cm so touching joints don't count)
+    for (const P of [A, B]) for (let i = 0; i < 4; i++) {
+      const [x1, y1] = P[i], [x2, y2] = P[(i + 1) % 4]; const ax = y1 - y2, ay = x2 - x1; const l = Math.hypot(ax, ay) || 1;
+      const pa = A.map(([x, y]) => (x * ax + y * ay) / l), pb = B.map(([x, y]) => (x * ax + y * ay) / l);
+      if (Math.max(...pa) - 0.5 <= Math.min(...pb) || Math.max(...pb) - 0.5 <= Math.min(...pa)) return true;
+    }
+    return false;
+  };
+  const okW = W.filter((o) => o.ok);
+  const Q = new Map(okW.map((o) => [o, quad(o)]));
+  for (let i = 0; i < okW.length; i++) for (let j = i + 1; j < okW.length; j++) {
+    const a = okW[i], b = okW[j];
+    if (sep(Q.get(a), Q.get(b))) continue;
+    const thin = a.t < b.t || (a.t === b.t && a.i > b.i) ? a : b;
+    res[thin.i].lower = Math.max(res[thin.i].lower, 1);
+  }
+  return res;
+}
+
+/** wall piece as a prism with a (possibly mitred) quad footprint: P side z=zP from p0..p1, N side z=zN from n0..n1.
+ *  Face groups follow BoxGeometry (0 +x end, 1 -x end, 2 top, 3 bottom, 4 +z = P, 5 -z = N) so the wall materials
+ *  and the P/N picking keep working; UVs are in metres along the wall so textures continue across pieces. */
+function prismGeo(p0, p1, n0, n1, zP, zN, y0, y1, ox = 0, oy = 0) {
+  const pos = [], nor = [], uv = [], idx = [], groups = [];
+  const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+  const quadF = (A, Bv, Cv, D, uvs, g) => {
+    const n = new THREE.Vector3().subVectors(v3(Cv), v3(A)).cross(new THREE.Vector3().subVectors(v3(D), v3(Bv)));
+    if (n.lengthSq() < 1e-12) return; // zero-area side (fully mitred away)
+    n.normalize();
+    const base = pos.length / 3;
+    for (const p of [A, Bv, Cv, D]) pos.push(p[0] - ox, p[1] - oy, p[2]);
+    for (let k = 0; k < 4; k++) nor.push(n.x, n.y, n.z);
+    uvs.forEach((u) => uv.push(u[0], u[1]));
+    groups.push({ start: idx.length, count: 6, materialIndex: g });
+    idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  };
+  const eP = Math.hypot(p1 - n1, zP - zN), eN = Math.hypot(p0 - n0, zP - zN);
+  quadF([p1, y0, zP], [n1, y0, zN], [n1, y1, zN], [p1, y1, zP], [[0, y0], [eP, y0], [eP, y1], [0, y1]], 0); // +x end
+  quadF([n0, y0, zN], [p0, y0, zP], [p0, y1, zP], [n0, y1, zN], [[0, y0], [eN, y0], [eN, y1], [0, y1]], 1); // -x end
+  quadF([p0, y1, zP], [p1, y1, zP], [n1, y1, zN], [n0, y1, zN], [[p0, zP], [p1, zP], [n1, zN], [n0, zN]], 2); // top
+  quadF([n0, y0, zN], [n1, y0, zN], [p1, y0, zP], [p0, y0, zP], [[n0, zN], [n1, zN], [p1, zP], [p0, zP]], 3); // bottom
+  quadF([p0, y0, zP], [p1, y0, zP], [p1, y1, zP], [p0, y1, zP], [[p0, y0], [p1, y0], [p1, y1], [p0, y1]], 4); // P
+  quadF([n1, y0, zN], [n0, y0, zN], [n0, y1, zN], [n1, y1, zN], [[-n1, y0], [-n0, y0], [-n0, y1], [-n1, y1]], 5); // N
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  for (const g of groups) geo.addGroup(g.start, g.count, g.materialIndex);
+  return geo;
+}
+
 /** Resolve the effective style for a room type (style.rooms[type] / style.rooms[name] overrides) */
 function roomStyle(style, room) {
   if (!room) return {};
@@ -115,6 +262,7 @@ export function buildScene(plan, style, opts = {}) {
   const exteriorMat = mat(style.exteriorWall || '#d9d6d0', '#d9d6d0', 'wall');
   const defaultWall = style.wall || { material: 'paint', color: '#f2f0eb' };
   const baseH = cm(style.baseboardHeight ?? 8);
+  const joints = wallJoints(plan);
 
   (plan.walls || []).forEach((w, wi) => {
     const [ax, ay] = w.a; const [bx, by] = w.b;
@@ -129,8 +277,8 @@ export function buildScene(plan, style, opts = {}) {
       const face = style.wallFaces?.[`${room.name}|${wi}|${side}`];
       return mat(face || roomStyle(style, room).wall || defaultWall, '#f2f0eb', 'wall');
     };
-    const ext = w.extend ?? t / 2;
-    const start = -ext, end = L + ext;
+    const J = joints[wi]; // per-side extents (cm along the wall), see wallJoints()
+    const start = Math.min(J.P0, J.N0), end = Math.max(J.P1, J.N1);
     // A long wall can border several rooms: split it into spans with constant rooms on both sides.
     const spans = [];
     const STEP = 5;
@@ -169,24 +317,39 @@ export function buildScene(plan, style, opts = {}) {
       return;
     }
 
+    const zP = cm(t) / 2, BT = 0.012; // baseboard thickness (m)
+    const capDrop = J.lower ? 0.1 : 0; // cm: overlapped thinner wall sits 1 mm under the thicker one's cap
     const piece = (x0, x1, y0, y1) => {
-      y1 = Math.min(y1, Hc, w.height || Infinity); // w.height: low wall / parapet
+      y1 = Math.min(y1, Hc, w.height || Infinity) - (y1 >= Math.min(Hc, w.height || Infinity) ? capDrop : 0); // w.height: low wall / parapet
       if (y1 - y0 < 0.5) return;
       for (const sp of spans) {
         const a0 = Math.max(x0, sp.s), a1 = Math.min(x1, sp.e);
-        const len = cm(a1 - a0), hgt = cm(y1 - y0);
-        if (len <= 0.001 || hgt <= 0.001) continue;
-        const m = new THREE.Mesh(boxGeo(len, hgt, cm(t)), [sp.mP, sp.mP, M.cap, M.cap, sp.mP, sp.mN]);
-        m.position.set(cm((a0 + a1) / 2), cm((y0 + y1) / 2), 0);
+        if (a1 - a0 <= 0.1 || y1 - y0 <= 0.1) continue;
+        // each side is clipped to its own (mitred) extent; interior cuts (span / opening edges) stay square
+        const p0 = cm(Math.max(a0, J.P0)), p1 = cm(Math.max(Math.max(a0, J.P0), Math.min(a1, J.P1)));
+        const n0 = cm(Math.max(a0, J.N0)), n1 = cm(Math.max(Math.max(a0, J.N0), Math.min(a1, J.N1)));
+        const ox = cm((a0 + a1) / 2), oy = cm((y0 + y1) / 2);
+        const m = new THREE.Mesh(prismGeo(p0, p1, n0, n1, zP, -zP, cm(y0), cm(y1), ox, oy), [sp.mP, sp.mP, M.cap, M.cap, sp.mP, sp.mN]);
+        m.position.set(ox, oy, 0);
         m.castShadow = true; m.receiveShadow = true;
         m.userData = { kind: 'wall', wall: wi, P: sp.rp?.name ?? null, N: sp.rn?.name ?? null };
         wallGroup.add(m);
-        // baseboards on room-facing sides of floor-level pieces
+        // baseboards on room-facing sides of floor-level pieces; their ends follow the wall's end line (mitre),
+        // and at a T-joint they stop one baseboard-thickness short so they don't run into the other wall's baseboard
         if (y0 === 0 && baseH > 0) {
           for (const [room, side] of [[sp.rp, 1], [sp.rn, -1]]) {
             if (!room || room.type === 'bathroom' || room.type === 'balcony') continue;
-            const bb = new THREE.Mesh(boxGeo(len, baseH, 0.012), M.baseboard);
-            bb.position.set(cm((a0 + a1) / 2), baseH / 2, side * (cm(t) / 2 + 0.006));
+            let [i0, i1] = side > 0 ? [p0, p1] : [n0, n1];
+            const atStart = side > 0 ? a0 <= J.P0 : a0 <= J.N0, atEnd = side > 0 ? a1 >= J.P1 : a1 >= J.N1;
+            const k0 = atStart ? (side > 0 ? (J.P0 - J.N0) : (J.N0 - J.P0)) / t : 0; // end-line slope per metre outward
+            const k1 = atEnd ? (side > 0 ? (J.P1 - J.N1) : (J.N1 - J.P1)) / t : 0;
+            if (atStart && J.T0) i0 += BT; if (atEnd && J.T1) i1 -= BT;
+            const o0 = i0 + k0 * BT, o1 = i1 + k1 * BT;
+            if (i1 - i0 < 0.005 && o1 - o0 < 0.005) continue;
+            const zi = side * zP, zo = side * (zP + BT);
+            const geo = side > 0 ? prismGeo(o0, o1, i0, i1, zo, zi, 0, baseH, ox, 0) : prismGeo(i0, i1, o0, o1, zi, zo, 0, baseH, ox, 0);
+            const bb = new THREE.Mesh(geo, M.baseboard);
+            bb.position.set(ox, 0, 0);
             bb.receiveShadow = true;
             wallGroup.add(bb);
           }
@@ -209,11 +372,13 @@ export function buildScene(plan, style, opts = {}) {
       og.userData = { kind: o.type, wall: wi };
       const cx = cm(o.at), wd = cm(o.width), sill = cm(o.sill), T = cm(t);
       const fullH = cm(o.height);
-      const oh = Math.min(fullH, cm(Hc) - sill); const clipped = oh < fullH - 1e-4;
+      // cut by the dollhouse section: stop 2 mm under the wall caps so frame tops never share the cap plane
+      const clipped = fullH > cm(Hc) - sill - 1e-4; const oh = clipped ? cm(Hc) - sill - 0.002 : fullH;
       if (o.type === 'door') {
         const fw = 0.04;
         for (const s of [-1, 1]) {
-          const f = new THREE.Mesh(boxGeo(fw, oh, T + 0.02), M.frame); f.position.set(cx + s * (wd / 2 - fw / 2), oh / 2, 0); og.add(f);
+          // 1 mm inside the opening: a door next to a corner would otherwise share the neighbour wall's face plane
+          const f = new THREE.Mesh(boxGeo(fw - 0.001, oh, T + 0.02), M.frame); f.position.set(cx + s * (wd / 2 - fw / 2 - 0.0005), oh / 2, 0); og.add(f);
         }
         if (!clipped) { const top = new THREE.Mesh(boxGeo(wd, fw, T + 0.02), M.frame); top.position.set(cx, oh - fw / 2, 0); og.add(top); }
         if (o.leaf !== false) {

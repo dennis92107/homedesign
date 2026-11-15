@@ -290,8 +290,8 @@ F.kitchen_counter = (it, M, S_) => {
   if (it.upper !== false) {
     B(g, w, 0.7, 0.35, M.cabinet, 0, 1.5, -d / 2 + 0.175);
     for (let i = 1; i < n; i++) B(g, 0.004, 0.68, 0.004, M.woodDark, -w / 2 + (w / n) * i, 1.51, -d / 2 + 0.35);
-    B(g, 0.6, 0.12, 0.5, M.metal, cx, 1.38, -d / 2 + 0.25); // hood
-    B(g, w, 0.6, 0.01, M.white, 0, 0.9, -d / 2 + 0.005); // backsplash
+    B(g, 0.6, 0.12, 0.49, M.metal, cx, 1.38, -d / 2 + 0.011 + 0.245); // hood (in front of the backsplash, not sharing its back plane)
+    B(g, w, 0.599, 0.01, M.white, 0, 0.9, -d / 2 + 0.005); // backsplash (1 mm under the upper cabinets)
   }
   return g;
 };
@@ -356,7 +356,7 @@ F.shower = (it, M) => {
 F.plant = (it, M) => {
   const g = new THREE.Group(); const h = it.h || 1.3; const kind = it.kind || 'leafy';
   C(g, 0.17, 0.13, 0.3, M.pot, 0, 0, 0, 24);
-  C(g, 0.15, 0.15, 0.02, M.woodDark, 0, 0.28, 0, 24);
+  C(g, 0.15, 0.15, 0.02, M.woodDark, 0, 0.285, 0, 24); // soil sits 5 mm above the pot rim (was coplanar → flicker)
   if (kind === 'tall') {
     C(g, 0.012, 0.015, h - 0.3, M.woodDark, 0, 0.3, 0, 6);
     const r = TX.rng(5);

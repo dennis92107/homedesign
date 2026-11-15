@@ -182,7 +182,7 @@
     <button data-view="walk">室內漫遊</button>
   </div>
   <button id="ptBtn" class="wide" style="margin-top:6px">✨ 真實渲染（光線追蹤）</button>
-  <div id="ptInfo" class="sub">靜止時逐步收斂成照片級畫面，移動視角會重新計算 · <span id="ptSamples"></span></div>
+  <div id="ptInfo" class="sub">靜止時逐步收斂成照片級畫面，移動視角會重新計算 · <span id="ptSamples"></span> · <label title="取樣少時先做保留邊緣的降噪，取樣越多越弱，收斂後自動關閉"><input type="checkbox" id="ptDenoise" checked> 降噪</label></div>
 
   <nav class="tabs">
     <button data-tab="template">樣板</button>
@@ -215,6 +215,7 @@
     <div class="toggles">
       <label><input type="checkbox" id="pbrToggle"><span>真實素材/模型</span></label>
       <label><input type="checkbox" id="aoToggle"><span>環境光遮蔽</span></label>
+      <label title="鏡頭停住後連續疊加 32 張微偏移的畫面：反鋸齒、環境光遮蔽更細緻"><input type="checkbox" id="accumToggle" checked><span>靜止時提高畫質</span></label>
     </div>
     <div id="assetStatus" class="sub"></div>
     <h2>顯示</h2>

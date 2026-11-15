@@ -6,7 +6,9 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { WebGLPathTracer, PathTracingSceneGenerator, GradientEquirectTexture } from 'three-gpu-pathtracer';
+import { WebGLPathTracer, PathTracingSceneGenerator, GradientEquirectTexture, DenoiseMaterial } from 'three-gpu-pathtracer';
+import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
+import { createAccumulator, stableShadowFit } from './quality.js';
 import { buildScene, applyModels, resolveCollision, polygonArea } from './builder.js';
 import { hdri, assetStats, setLocalCatalog } from './assets.js';
 import { settings } from './materials.js';
@@ -56,10 +58,12 @@ gtao.updateGtaoMaterial({ radius: 0.45, distanceExponent: 1.5, thickness: 1.5, s
 gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
 composer.addPass(gtao);
 composer.addPass(new OutputPass());
+// still camera → accumulate jittered frames (anti-aliasing + smoother AO), see quality.js
+const accum = createAccumulator({ renderer, composer, camera, gtao, index: 2 });
 
 // path tracer (photoreal mode)
 let pathTracer = null;
-const pt = { on: false, lastMatrix: new THREE.Matrix4(), dirty: false, maxSamples: 400 };
+const pt = { on: false, lastMatrix: new THREE.Matrix4(), dirty: false, maxSamples: 400, denoise: true };
 
 // ---------- state ----------
 const state = {
@@ -143,6 +147,7 @@ async function load({ planUrl = state.planUrl, styleUrl, resetCamera = false, us
 function cutHeight() { return state.view !== 'walk' && state.cutaway ? (state.plan?.cutawayHeight || 120) : null; }
 
 function applyData(plan, style, { resetCamera = false } = {}) {
+  accum.markDirty();
   const prevBounds = state.built?.bounds;
   const styleChanged = state.style !== style;
   state.plan = plan; state.style = style;
@@ -155,6 +160,7 @@ function applyData(plan, style, { resetCamera = false } = {}) {
 
 /** (re)build the house with the current plan/style/view; keeps the camera */
 function rebuild() {
+  accum.markDirty();
   if (!state.plan) return;
   if (state.built) { disposeTree(state.built.root); scene.remove(state.built.root); }
   const eff = effective(state.plan, state.style, state.design);
@@ -172,7 +178,7 @@ function rebuild() {
 let saveTimer = null;
 /** mutate the design layer, then rebuild (or just refresh visibility) and save to designs/<plan>.json */
 function commit(mutator, { rebuild: doRebuild = true } = {}) {
-  mutator(state.design);
+  mutator(state.design); accum.markDirty();
   state.designCanon = canon(state.design);
   if (doRebuild) rebuildSoon(); else { applyFurnitureVisibility(); editor?.refresh(); }
   state.savePending = true;
@@ -327,6 +333,7 @@ async function loadEnvironment() {
 // ---------- lighting ----------
 const TONE = { aces: THREE.ACESFilmicToneMapping, agx: THREE.AgXToneMapping, neutral: THREE.NeutralToneMapping, filmic: THREE.CineonToneMapping };
 function applyLighting() {
+  accum.markDirty();
   const L = state.style?.lighting || {};
   renderer.toneMapping = TONE[L.toneMapping || 'aces'] ?? THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = L.exposure ?? 1.0;
@@ -339,6 +346,7 @@ function applyLighting() {
   sun.target.position.set(cx, 0, cz);
   const sc = sun.shadow.camera; const ext = size * 0.75 + 1;
   sc.left = -ext; sc.right = ext; sc.top = ext; sc.bottom = -ext; sc.near = 1; sc.far = 80; sc.updateProjectionMatrix();
+  sun.shadow.normalBias = 0.02; // walk view overrides box + bias every frame (walkShadow)
   const golden = Math.max(0, 1 - Math.sin(Math.max(0, Math.min(Math.PI, a))) * 2.2);
   sun.color.copy(new THREE.Color(L.sunColor || '#fff1dc').lerp(new THREE.Color('#ffb070'), golden * 0.6));
   sun.intensity = night ? 0 : (L.sunIntensity ?? 3) * (0.35 + 0.65 * Math.sin(Math.max(0.1, Math.min(Math.PI - 0.1, a))));
@@ -463,6 +471,7 @@ function selectionObjects(sel) {
   return out;
 }
 function updateHighlight() {
+  accum.markDirty();
   const objs = selectionObjects(state.selection);
   if (!objs.length) { highlight.visible = false; return; }
   const box = highlight.box.makeEmpty();
@@ -536,6 +545,19 @@ function ensurePathTracer() {
   pathTracer.dynamicLowRes = true;
   pathTracer.lowResScale = 0.25;
   pathTracer.tiles.set(1, 1);
+  // edge-aware denoise as the final pass (the library's DenoiseMaterial, set up like its official example);
+  // it fades out as samples accumulate, so the converged image keeps all its detail
+  const denoiseQuad = new FullScreenQuad(new DenoiseMaterial({ map: null, blending: THREE.CustomBlending, premultipliedAlpha: renderer.getContextAttributes().premultipliedAlpha }));
+  pathTracer.renderToCanvasCallback = (target, r, quad) => {
+    const n = pathTracer.samples, on = pt.denoise && n < pt.maxSamples * 0.9;
+    const auto = r.autoClear; r.autoClear = false;
+    if (on) {
+      const m = denoiseQuad.material, k = Math.min(1, n / 200); // strong at first, gentle once converged
+      m.sigma = 5 - 3 * k; m.threshold = 0.1 - 0.07 * k; m.kSigma = 1; m.opacity = quad.material.opacity;
+      m.map = target.texture; denoiseQuad.render(r);
+    } else { quad.material.map = target.texture; quad.render(r); }
+    r.autoClear = auto;
+  };
   return pathTracer;
 }
 let ptSceneTimer = null;
@@ -636,6 +658,7 @@ function setPT(on) {
 }
 // re-sync the path tracer when streamed textures/models finish
 assetStats.listeners.add((s) => {
+  accum.markDirty(); // a texture / model just streamed in
   $('#assetStatus').textContent = s.pending ? `下載真實素材中… (${s.pending})` : (s.failed ? `素材 ${s.loaded} 個（${s.failed} 個失敗，已用程序材質代替）` : (s.loaded ? `真實素材 ${s.loaded} 個已載入` : ''));
   if (!s.pending) ptScene();
 });
@@ -673,6 +696,8 @@ const bindToggle = (id, key, fn = applyVisibility) => { const el = $(id); el.che
 bindToggle('#cutToggle', 'cutaway', () => rebuild());
 bindToggle('#labelToggle', 'showLabels'); bindToggle('#underlayToggle', 'showUnderlay');
 bindToggle('#aoToggle', 'ao', () => {});
+$('#accumToggle').onchange = (e) => { accum.enabled = e.target.checked; };
+$('#ptDenoise').onchange = (e) => { pt.denoise = e.target.checked; };
 $('#pbrToggle').checked = settings.pbr;
 $('#pbrToggle').onchange = (e) => { settings.pbr = e.target.checked; loadEnvironment(); rebuild(); };
 $('#liveToggle').checked = true; $('#liveToggle').onchange = (e) => (state.live = e.target.checked);
@@ -701,6 +726,7 @@ addEventListener('drop', async (e) => {
 
 // ---------- loop ----------
 function resize() {
+  accum.markDirty();
   const w = viewport.clientWidth, h = viewport.clientHeight;
   if (!w || !h) return;
   renderer.setSize(w, h); labelRenderer.setSize(w, h); composer.setSize(w, h);
@@ -717,14 +743,43 @@ function renderFrame() {
     $('#ptSamples').textContent = `取樣 ${Math.floor(pathTracer.samples)} / ${pt.maxSamples}`;
     return;
   }
-  if (state.ao) composer.render(); else renderer.render(scene, camera);
+  if (state.view === 'walk') walkShadow();
+  gtao.enabled = !!state.ao;
+  accum.before(); composer.render(); accum.after();
   furnDrag.render(); // drag helpers (footprint, rotate ring, wall distances) on top
 }
+/**
+ * Depth precision: the depth buffer spends most of its precision right after the near plane, so a tiny near plane
+ * (needed when walking up to furniture) leaves almost none for a bird's-eye view 20 m away → coplanar-ish faces
+ * flicker. Outside walk mode the near plane is pushed out to half the distance to the house (and to the ground),
+ * which raises precision at the house roughly in proportion (×10–100). Far stays fixed.
+ */
+const _houseBox = new THREE.Box3();
+function updateNearFar() {
+  let near = 0.05;
+  if (state.view !== 'walk' && state.built?.bounds) {
+    const b = state.built.bounds, top = (state.plan?.wallHeight || 280) / 100 + 1;
+    _houseBox.min.set(b.minX - 1.5, -0.1, b.minZ - 1.5); _houseBox.max.set(b.maxX + 1.5, top, b.maxZ + 1.5);
+    near = Math.max(0.05, Math.min(_houseBox.distanceToPoint(camera.position), camera.position.y) * 0.5);
+  }
+  if (Math.abs(camera.near - near) > 1e-3 * near) { camera.near = near; camera.updateProjectionMatrix(); }
+}
+/** walk view: sun shadow box follows the walker (centred a few metres ahead), snapped to shadow texels */
+const _ahead = new THREE.Vector3();
+function walkShadow() {
+  camera.getWorldDirection(_ahead); _ahead.y = 0; if (_ahead.lengthSq() < 1e-6) _ahead.set(0, 0, -1);
+  _ahead.normalize().multiplyScalar(3).add(camera.position); _ahead.y = 1.2;
+  stableShadowFit(sun, { center: _ahead, radius: 6.5, mapSize: sun.shadow.mapSize.x });
+}
+// anything the user does may change the picture (drag, sliders, keys…): restart the still-frame accumulation
+for (const ev of ['pointerdown', 'pointerup', 'wheel', 'keydown', 'keyup', 'input', 'change']) addEventListener(ev, () => accum.markDirty(), { capture: true, passive: true });
+addEventListener('pointermove', (e) => { if (e.buttons) accum.markDirty(); }, { capture: true, passive: true });
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(0.05, clock.getDelta());
   if (!state.built) return;
   if (state.view === 'walk') updateWalk(dt); else orbit.update();
+  updateNearFar();
   renderFrame();
   if (!pt.on) labelRenderer.render(scene, camera);
 });
@@ -857,11 +912,48 @@ $('#clearLocalBtn').onclick = () => {
 // ---------- debug helpers (work in background tabs) ----------
 function snap() {
   if (state.view === 'walk') camera.rotation.set(walk.pitch, walk.yaw, 0, 'YXZ'); else orbit.update();
-  renderFrame();
+  updateNearFar(); renderFrame();
   let img = document.getElementById('snap');
   if (!img) { img = document.createElement('img'); img.id = 'snap'; img.onclick = () => img.remove(); img.style = 'position:fixed;inset:0;z-index:99;width:100vw;height:100vh;object-fit:contain;background:#000;cursor:pointer'; document.body.appendChild(img); }
   img.src = renderer.domElement.toDataURL();
   return 'ok';
+}
+/**
+ * z-fighting detector: render the same view with slightly different near/far planes; pixels whose colour changes
+ * are surfaces fighting over depth (flicker). Returns the culprit mesh pairs. `await app.zfight('walk')`
+ */
+async function zfight(view, { w = 1000, h = 700, show = true } = {}) {
+  const prev = { w: renderer.domElement.clientWidth, h: renderer.domElement.clientHeight };
+  setSize(w, h); if (view) frame(view);
+  if (state.view === 'walk') camera.rotation.set(walk.pitch, walk.yaw, 0, 'YXZ'); else orbit.update();
+  updateNearFar(); camera.updateMatrixWorld();
+  const W = renderer.domElement.width, H = renderer.domElement.height;
+  const c2 = document.createElement('canvas'); c2.width = W; c2.height = H; const x2 = c2.getContext('2d', { willReadFrequently: true });
+  const grab = () => { renderer.render(scene, camera); x2.drawImage(renderer.domElement, 0, 0); return x2.getImageData(0, 0, W, H).data; };
+  const n0 = camera.near, f0 = camera.far; const shots = [];
+  for (const [n, f] of [[1, 1], [1.03, 1], [1, 1.1], [0.97, 0.9], [1.06, 1.2]]) { camera.near = n0 * n; camera.far = f0 * f; camera.updateProjectionMatrix(); shots.push(grab()); }
+  camera.near = n0; camera.far = f0; camera.updateProjectionMatrix();
+  const base = shots[0]; const pts = [];
+  for (let i = 0; i < W * H; i++) for (const s of shots.slice(1)) {
+    if (Math.abs(s[i * 4] - base[i * 4]) + Math.abs(s[i * 4 + 1] - base[i * 4 + 1]) + Math.abs(s[i * 4 + 2] - base[i * 4 + 2]) > 30) { pts.push(i); break; }
+  }
+  const rc = new THREE.Raycaster(), groups = {};
+  const tag = (o) => { for (let p = o; p && p !== scene; p = p.parent) { const u = p.userData || {}; if (u.kind) return u.kind + (u.wall != null ? '#' + u.wall : '') + (u.id ? ':' + u.id : ''); } return o.name || o.geometry?.type; };
+  for (let k = 0; k < pts.length; k += Math.max(1, Math.floor(pts.length / 400))) {
+    const i = pts[k]; rc.setFromCamera(new THREE.Vector2((i % W) / W * 2 - 1, -(Math.floor(i / W) / H * 2 - 1)), camera);
+    const hits = rc.intersectObjects(scene.children, true).filter((q) => q.object.isMesh && isVisibleChain(q.object));
+    const a = hits[0], b = a && hits.find((q) => q.object !== a.object);
+    if (!b) continue;
+    const key = `${tag(a.object)} vs ${tag(b.object)} ${(b.distance - a.distance) * 1000 <= 2 ? '≤2mm' : '>2mm'}`;
+    groups[key] = (groups[key] || 0) + 1;
+  }
+  if (show) {
+    const img = x2.createImageData(W, H); const mask = new Uint8Array(W * H); pts.forEach((i) => { mask[i] = 1; });
+    for (let i = 0; i < W * H; i++) { const m = mask[i]; img.data[i * 4] = m ? 255 : base[i * 4] * 0.5 + 90; img.data[i * 4 + 1] = m ? 0 : base[i * 4 + 1] * 0.5 + 90; img.data[i * 4 + 2] = m ? 0 : base[i * 4 + 2] * 0.5 + 90; img.data[i * 4 + 3] = 255; }
+    x2.putImageData(img, 0, 0); snap(); document.getElementById('snap').src = c2.toDataURL();
+  }
+  if (prev.w && prev.h && (prev.w !== w || prev.h !== h)) setSize(prev.w, prev.h);
+  return { changed: pts.length, pct: +(pts.length / (W * H) * 100).toFixed(3), groups: Object.entries(groups).sort((a, b) => b[1] - a[1]).slice(0, 12) };
 }
 /** run n path-tracing samples synchronously (for screenshots while the tab is hidden) */
 async function ptSamples(n = 64) {
@@ -888,4 +980,4 @@ function setSize(w, h) {
   gtao.setSize(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
   camera.aspect = w / h; camera.updateProjectionMatrix(); ptCamera();
 }
-window.app = { store, exportBundle, importChanges, pendingChanges, setSize, composer, gtao, commit, select, pickAt, editor: () => editor, state, frame, load, rebuild, enterWalkAt, camera, scene, renderer, walk, snap, ptSamples, setPT, applyLighting, assetStats, get pathTracer() { return pathTracer; } };
+window.app = { accum, zfight, store, exportBundle, importChanges, pendingChanges, setSize, composer, gtao, commit, select, pickAt, editor: () => editor, state, frame, load, rebuild, enterWalkAt, camera, scene, renderer, walk, snap, ptSamples, setPT, applyLighting, assetStats, get pathTracer() { return pathTracer; } };
