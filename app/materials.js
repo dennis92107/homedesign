@@ -42,8 +42,8 @@ export function surfaceMaterial(spec = {}, fallback = '#cccccc', { surface = 'fl
   switch (spec.material) {
     case 'wood': map = TX.planks({ color, plankWidth: spec.plankWidth || 18, variation: spec.variation ?? 0.12 }); rough ??= 0.55; break;
     case 'herringbone': map = TX.herringbone({ color, plankWidth: spec.plankWidth || 10, plankLength: spec.plankLength || 50, variation: spec.variation ?? 0.14 }); rough ??= 0.5; break;
-    case 'tile': map = TX.tiles({ color, grout: spec.grout || TX.shade(color, -0.25), tileSize: spec.tileSize || 60 }); rough ??= 0.3; break;
-    case 'marble': map = TX.marble({ color, tileSize: spec.tileSize || 80, grout: spec.grout || TX.shade(color, -0.12), veins: spec.veins, veinColor: spec.veinColor }); rough ??= 0.15; break;
+    case 'tile': map = TX.tiles({ color, grout: spec.grout || TX.shade(color, -0.25), tileSize: spec.tileSize || 60, tileHeight: spec.tileHeight }); rough ??= 0.3; break;
+    case 'marble': map = TX.marble({ color, tileSize: spec.tileSize || 80, tileHeight: spec.tileHeight, grout: spec.grout || TX.shade(color, -0.12), veins: spec.veins, veinColor: spec.veinColor }); rough ??= 0.15; break;
     case 'concrete': map = TX.concrete({ color }); rough ??= 0.8; break;
     case 'hex': map = TX.hexTiles({ color, colors: spec.colors, grout: spec.grout || TX.shade(color, -0.3), tileSize: spec.tileSize || 20 }); rough ??= 0.4; break;
     case 'terrazzo': map = TX.terrazzo({ color, chips: spec.chips || undefined }); rough ??= 0.35; break;
@@ -53,7 +53,9 @@ export function surfaceMaterial(spec = {}, fallback = '#cccccc', { surface = 'fl
     case 'woodPanel': map = TX.woodPanel({ color, slat: spec.slat || 4, gap: spec.gap || 1.2 }); rough ??= 0.6; break;
     default: rough ??= 0.92; // paint
   }
-  if (spec.image) map = imageTexture(spec.image, spec.imageSize || 1);
+  // a photo cut into tiles (tile / marble + image): each tile a different crop of the photo, with grout joints
+  if (spec.image && ['tile', 'marble'].includes(spec.material)) map = TX.imageTiles({ url: spec.image, color, grout: spec.grout || TX.shade(color, -0.15), tileSize: spec.tileSize || 60, tileHeight: spec.tileHeight, imageSize: spec.imageSize || 1, brightness: spec.brightness ?? 1, contrast: spec.contrast ?? 1, invert: !!spec.invert, gray: !!spec.gray, groutWidth: spec.groutWidth ?? 0.2 });
+  else if (spec.image) map = imageTexture(spec.image, spec.imageSize || 1);
   if (map) map = applyWorld(map, spec.direction || 0);
   const mat = new THREE.MeshStandardMaterial({ color: map ? 0xffffff : color, map, roughness: rough, metalness: spec.metalness || 0 });
   if (surface === 'ceiling') mat.side = THREE.BackSide;

@@ -217,12 +217,17 @@ function prismGeo(p0, p1, n0, n1, zP, zN, y0, y1, ox = 0, oy = 0) {
   return geo;
 }
 
-/** Resolve the effective style for a room type (style.rooms[type] / style.rooms[name] overrides) */
+/** Resolve the effective style for a room type (style.rooms[type] / style.rooms[name] overrides).
+ *  A locked room (rooms[name].locked, set in the design layer) ignores the template's room-type spec. */
 function roomStyle(style, room) {
   if (!room) return {};
   const r = style.rooms || {};
-  return { ...(r[room.type] || {}), ...(r[room.name] || {}) };
+  const named = r[room.name] || {};
+  if (named.locked) return named;
+  return { ...(r[room.type] || {}), ...named };
 }
+// what a locked room falls back to when it leaves a surface unset (never the template's)
+const LOCKED_FALLBACK = { wall: { material: 'paint', color: '#f2f0eb' }, floor: { material: 'tile', color: '#d9d6d0' }, ceiling: '#f7f6f3' };
 
 /**
  * @param opts.cut  cut height in cm for the dollhouse view (walls, doors, windows are built only up to it); null = full height
@@ -260,13 +265,14 @@ export function buildScene(plan, style, opts = {}) {
     const rs = roomStyle(style, room);
     const shape = new THREE.Shape(room.polygon.map(([x, y]) => new THREE.Vector2(cm(x), -cm(y))));
     const geo = new THREE.ShapeGeometry(shape);
-    const floor = new THREE.Mesh(geo, mat(rs.floor || defaultFloor, '#c49a6c'));
+    const fspec = rs.floor || (rs.locked ? LOCKED_FALLBACK.floor : defaultFloor);
+    const floor = new THREE.Mesh(geo, mat(fspec, '#c49a6c'));
     floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; floor.position.y = 0.001;
-    floor.userData = { kind: 'floor', room: room.name, floorSpec: rs.floor || defaultFloor }; // floorSpec: reflect.js
+    floor.userData = { kind: 'floor', room: room.name, floorSpec: fspec }; // floorSpec: reflect.js
     groups.floors.add(floor);
 
     // ceiling: "#hex" or a surface spec (paint / woodPanel / concrete …)
-    const cspec = rs.ceiling ?? style.ceiling ?? ceilingColor;
+    const cspec = rs.ceiling ?? (rs.locked ? LOCKED_FALLBACK.ceiling : style.ceiling ?? ceilingColor);
     const cs = typeof cspec === 'string' ? { material: 'paint', color: cspec } : { material: 'paint', ...cspec, color: cspec.color || ceilingColor };
     const cmat = mat({ ...cs, pbr: cs.pbr ?? (cs.material === 'paint' ? false : undefined) }, ceilingColor, 'ceiling');
     const ceil = new THREE.Mesh(geo, cmat);
@@ -349,7 +355,8 @@ export function buildScene(plan, style, opts = {}) {
     const sideMat = (room, side) => {
       if (!room) return exteriorMat;
       const { wash, ...face } = style.wallFaces?.[`${room.name}|${wi}|${side}`] || {}; // wash = lighting only, not a surface
-      return mat((Object.keys(face).length ? face : null) || roomStyle(style, room).wall || defaultWall, '#f2f0eb', 'wall');
+      const rs = roomStyle(style, room);
+      return mat((Object.keys(face).length ? face : null) || rs.wall || (rs.locked ? LOCKED_FALLBACK.wall : defaultWall), '#f2f0eb', 'wall');
     };
     // decorative grooves (分割溝縫) on a face: face spec > room wall spec > global wall spec; a face with its own
     // finish (e.g. a marble TV wall) does not inherit the room's grooves
@@ -358,7 +365,8 @@ export function buildScene(plan, style, opts = {}) {
       const face = style.wallFaces?.[`${room.name}|${wi}|${side}`];
       if (face?.grooves !== undefined) return face.grooves || null;
       if (face && (face.material || face.color || face.image)) return null;
-      return roomStyle(style, room).wall?.grooves ?? defaultWall.grooves ?? null;
+      const rs = roomStyle(style, room);
+      return rs.wall?.grooves ?? (rs.locked ? null : defaultWall.grooves) ?? null;
     };
     const J = joints[wi]; // per-side extents (cm along the wall), see wallJoints()
     const start = Math.min(J.P0, J.N0), end = Math.max(J.P1, J.N1);
@@ -560,6 +568,7 @@ export function buildScene(plan, style, opts = {}) {
   const byId = new Map();
   const decorCtx = decorContext(style, M);
   const nightCount = new Map(); // nightstands seen per room (decor: lamp on one side, pendant on the other)
+  const roomMats = new Map(); // room name → role set with that room's own furniture colours
   for (let it of plan.furniture || []) {
     const fn = FURNITURE[it.type];
     if (!fn) { console.warn('unknown furniture type', it.type); continue; }
@@ -569,8 +578,18 @@ export function buildScene(plan, style, opts = {}) {
     // ceiling fixtures sit at the ceiling by default; h: "full" = floor-to-ceiling (follows the plan's wall height)
     if (it.type === 'ring_light' && it.elevation == null) it = { ...it, elevation: Hcm - 1 };
     const item = { ...it, w: cm(it.w ?? dw), d: cm(it.d ?? dd), h: it.h === 'full' ? cm(Hcm - (it.elevation || 0)) : it.h != null ? cm(it.h) : undefined };
-    const Mi = withOverrides(M, it.colors);
-    const variant = { ...S_, ...(it.variant || {}) };
+    // a room can carry its own furniture colours / models (rooms.<name>.materials / .models); a locked room
+    // uses only those, never the template's (fixtures that stay the same whatever template is applied)
+    const furnRoom = roomAt(plan, [it.x, it.y]);
+    const frs = furnRoom ? roomStyle(style, furnRoom) : {};
+    let Mroom = M;
+    if (frs.materials || frs.locked) {
+      const k = furnRoom.name;
+      if (!roomMats.has(k)) roomMats.set(k, frs.locked ? buildRoleMaterials({ materials: frs.materials || {} }) : withOverrides(M, frs.materials));
+      Mroom = roomMats.get(k);
+    }
+    const Mi = withOverrides(Mroom, it.colors);
+    const variant = { ...(frs.locked ? frs.furniture || {} : S_), ...(it.variant || {}) };
     // record which material roles this piece uses, so the editor can offer exactly those colour pickers
     const roles = new Set();
     const MiTracked = new Proxy(Mi, { get(t, k) { if (typeof k === 'string') roles.add(k); return t[k]; } });
@@ -593,7 +612,7 @@ export function buildScene(plan, style, opts = {}) {
       chaiseCollider = { obj, x: cm(it.x), z: cm(it.y), rot: rotRad, ox: side * (item.w / 2 - cw / 2), oz: item.d / 2 + ext / 2, hw: cw / 2, hd: ext / 2, side };
       colliders.push(chaiseCollider);
     }
-    const roomType = roomAt(plan, [it.x, it.y])?.type;
+    const roomType = furnRoom?.type;
     // real 3D model replacement (whole piece, or sub-slots such as dining chairs)
     const modelFor = (type, explicit, slotVariant) => {
       if (explicit === false) return null;
@@ -603,7 +622,7 @@ export function buildScene(plan, style, opts = {}) {
         return { ...(MODEL_FIT[spec.id] || {}), ...(e.by ? { by: e.by } : {}), rotate: e.rotate || 0, ...spec };
       };
       if (typeof explicit === 'string') return withFit({ id: explicit });
-      const sm = style.models?.[type];
+      const sm = frs.locked ? frs.models?.[type] : frs.models?.[type] ?? style.models?.[type];
       if (sm === false) return null;
       if (typeof sm === 'string') return withFit({ id: sm });
       if (Array.isArray(sm)) { // e.g. [{ id, if: { chaise: true } }, { id }] — no match → the built-in default
@@ -614,7 +633,7 @@ export function buildScene(plan, style, opts = {}) {
       return withFit(pickDefault(type, slotVariant ? {} : it, slotVariant || variant, roomType));
     };
     const tintFor = (type, explicit) => {
-      const role = explicit ?? style.modelTint?.[type];
+      const role = explicit ?? (frs.locked ? frs.modelTint : style.modelTint)?.[type];
       if (!role) return null;
       if (role.startsWith('#')) return new THREE.Color(role);
       const m = Mi[role];

@@ -67,6 +67,7 @@ export function createEditor(api) {
     for (const r of rooms()) {
       const grp = `房間・${r.name}`;
       const tW = () => effStyle().rooms?.[r.type]?.wall ?? effStyle().wall;
+      P.push({ key: `r:${r.name}:lock`, label: `${r.name}・🔒 鎖定（換樣板不變）`, path: ['rooms', r.name, 'locked'], kind: 'lock', group: grp, room: r });
       P.push({ key: `r:${r.name}:floor`, label: `${r.name}・地板`, path: ['rooms', r.name, 'floor'], kind: 'surface', surface: 'floor', group: grp, fallback: () => effStyle().rooms?.[r.type]?.floor ?? effStyle().floor });
       P.push({ key: `r:${r.name}:wall`, label: `${r.name}・牆面（整間）`, path: ['rooms', r.name, 'wall'], kind: 'surface', surface: 'wall', group: grp, fallback: tW });
       P.push({ key: `r:${r.name}:ceiling`, label: `${r.name}・天花板`, path: ['rooms', r.name, 'ceiling'], kind: 'surface', surface: 'wall', group: grp, fallback: () => effStyle().rooms?.[r.type]?.ceiling ?? effStyle().ceiling ?? '#f7f6f3' });
@@ -134,7 +135,8 @@ export function createEditor(api) {
       if (['wood', 'herringbone'].includes(m)) html += field('板寬 cm', num('plankWidth', s.plankWidth ?? (m === 'wood' ? 18 : 10), 5, 40));
       if (m === 'herringbone') html += field('板長 cm', num('plankLength', s.plankLength ?? 50, 20, 120));
       if (['wood', 'herringbone'].includes(m)) html += field('鋪設方向', `<select data-k="direction" data-num>${[[0, '0°'], [90, '90°'], [45, '45°']].map(([k, l]) => `<option value="${k}" ${+(s.direction || 0) === k ? 'selected' : ''}>${l}</option>`).join('')}</select>`);
-      if (['tile', 'marble'].includes(m)) html += field('磚尺寸 cm', num('tileSize', s.tileSize ?? 60, 10, 160));
+      if (['tile', 'marble'].includes(m)) html += field(p.surface === 'floor' ? '磚寬 cm' : '磚寬 cm（橫）', num('tileSize', s.tileSize ?? 60, 10, 160));
+      if (['tile', 'marble'].includes(m)) html += field(p.surface === 'floor' ? '磚長 cm' : '磚高 cm', num('tileHeight', s.tileHeight ?? s.tileSize ?? 60, 10, 160));
       if (m === 'tile') html += field('填縫色', colorInput('grout', s.grout || '#9c968d'));
       if (m === 'brick') html += field('磚縫色', colorInput('color2', s.color2 || '#d8d0c4'));
       if (m === 'woodPanel') html += field('格柵寬 cm', num('slat', s.slat ?? 4, 1, 15));
@@ -146,6 +148,22 @@ export function createEditor(api) {
       html += field('顏色', colorInput('color', v));
       box.innerHTML = html;
       box.querySelector('[data-k=color]').oninput = debounce((e) => set(p, e.target.value), 120);
+    } else if (p.kind === 'lock') {
+      html += field('鎖定', `<label class="inline"><input type="checkbox" data-k="lock" ${v ? 'checked' : ''}> 這間不跟樣板變</label>`);
+      html += `<div class="sub">鎖定後這間的地板、牆面、天花、家具顏色與模型、燈光都只用客製層的設定，換任何樣板都一樣（例：建商交屋、不重新裝修的衛浴）。勾選時會把目前看到的地板／牆面／天花先寫進客製層。</div>`;
+      box.innerHTML = html;
+      box.querySelector('[data-k=lock]').onchange = (e) => {
+        const r = p.room, on = e.target.checked, es = effStyle();
+        api.commit((d) => {
+          if (!on) return deletePath(d.style, ['rooms', r.name, 'locked']);
+          const cur = { ...(es.rooms?.[r.type] || {}), ...(es.rooms?.[r.name] || {}) };
+          for (const k of ['floor', 'wall', 'ceiling']) if (getPath(d.style, ['rooms', r.name, k]) === undefined) {
+            const val = cur[k] ?? (k === 'ceiling' ? es.ceiling?.color ?? es.ceiling : es[k]);
+            if (val !== undefined) setPath(d.style, ['rooms', r.name, k], JSON.parse(JSON.stringify(val)));
+          }
+          setPath(d.style, ['rooms', r.name, 'locked'], true);
+        });
+      };
     } else if (p.kind === 'enum') {
       html += field('樣式', `<select data-k="v">${p.options.map(([k, l]) => `<option value="${k}" ${k === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`);
       box.innerHTML = html;
@@ -195,6 +213,19 @@ export function createEditor(api) {
   }
 
   // ---------- furniture tab ----------
+  // 必備物品（design.essentials）：清單＋自動擺放的說明／提醒
+  function essentialsHTML(list) {
+    const ess = state.design.essentials || [];
+    if (!ess.length) return '';
+    const name = (e) => e.label || (e.kind === 'tv' ? `電視 ${e.inch || ''}"` : e.kind === 'workstation' ? `電腦＋${e.monitorInch || 27}" 螢幕` : e.id);
+    const manual = list.some((i) => i.origin === 'essential' && i.customized);
+    const notes = state.eff?.essentialNotes || [];
+    return `<details class="essentials" open><summary>必備物品 ${ess.length} 項（依格局自動擺放）</summary>
+      <div class="sub">${ess.map((e) => esc(name(e))).join('、')}。改格局後會自動重新找位置；手動拖過的以手動為準。</div>
+      ${notes.length ? `<ul class="sub">${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+      ${manual ? '<div class="row-actions small"><button data-ess-reset>全部改回自動擺放</button></div>' : ''}
+    </details>`;
+  }
   function renderFurniture() {
     const root = $('#furnRoot');
     const list = items();
@@ -219,6 +250,7 @@ export function createEditor(api) {
         <button class="chip ${pendantOn ? 'on' : ''}" data-gen="pendant">吊燈</button>
         <button class="chip ${accOn ? 'on' : ''}" data-gen="accessories" title="抱枕、毯子、書、托盤、花瓶、檯燈、掛畫（依樣板配色自動擺放）">擺飾</button>
       </div>
+      ${essentialsHTML(list)}
       ${addOpen ? addFormHTML() : ''}
       ${sel ? itemEditorHTML(sel) : '<p class="hint">在清單或 3D 畫面點選家具，即可換模型、改顏色、調整位置與尺寸。</p>'}
       <div class="flist">
@@ -227,7 +259,7 @@ export function createEditor(api) {
             <span><button class="link" data-room-on="${esc(room)}">全開</button> · <button class="link" data-room-off="${esc(room)}">全關</button></span></div>
             ${its.map((it) => `<div class="frow ${sel?.id === it.id ? 'sel' : ''}" data-id="${esc(it.id)}">
               <input type="checkbox" data-vis="${esc(it.id)}" ${it.hidden ? '' : 'checked'}>
-              <span class="fname">${esc(TYPE_LABELS[it.type] || it.type)}${itemModelName(it) ? ` <em>${esc(itemModelName(it))}</em>` : ''}${it.origin === 'added' ? ' <span class="badge custom">新增</span>' : it.customized ? ' <span class="badge custom">●</span>' : ''}</span>
+              <span class="fname">${esc(TYPE_LABELS[it.type] || it.type)}${itemModelName(it) ? ` <em>${esc(itemModelName(it))}</em>` : ''}${it.origin === 'essential' ? ` <span class="badge custom" title="必備物品：依格局自動擺放">必備${it.customized ? '・手動' : ''}</span>` : it.origin === 'added' ? ' <span class="badge custom">新增</span>' : it.customized ? ' <span class="badge custom">●</span>' : ''}</span>
             </div>`).join('')}
           </div>`).join('')}
       </div>
@@ -243,6 +275,13 @@ export function createEditor(api) {
       setPath(d.style, ['decor', 'curtains', 'enabled'], false); setPath(d.style, ['decor', 'pendant'], 'none');
     });
     $('#addBtn').onclick = () => { addOpen = !addOpen; renderFurniture(); };
+    root.querySelector('[data-ess-reset]')?.addEventListener('click', () => api.commit((d) => { // essentials back to automatic placement
+      for (const it of list.filter((i) => i.origin === 'essential')) {
+        const o = d.furniture?.[it.id]; if (!o) continue;
+        for (const k of ['x', 'y', 'rotation', 'elevation']) delete o[k];
+        if (!Object.keys(o).length) delete d.furniture[it.id];
+      }
+    }));
     root.querySelectorAll('[data-cat]').forEach((b) => (b.onclick = () => api.commit((d) => {
       const k = b.dataset.cat; const s = new Set(d.hiddenCategories || []);
       if (s.has(k)) { s.delete(k); for (const it of list) if (categoryOf(it.type) === k && d.furniture[it.id]) delete d.furniture[it.id].hidden; } else s.add(k);

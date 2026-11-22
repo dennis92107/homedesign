@@ -87,6 +87,21 @@ function glowMaterial(color, strength = 2) {
 export function roomLighting(style, rs, room) {
   const L = style.lighting || {};
   const rl = rs.lighting || {};
+  // a locked room (rs.locked) lights itself: its own lighting.downlights / cove / skirting objects switch them on
+  // without the template, and the template's per-room-type lists and defaults are ignored
+  if (rs.locked) {
+    const own = (v, d) => (v && typeof v === 'object' ? { ...d, ...v } : null);
+    const kelvin = rl.kelvin ?? 3000;
+    const dl = own(rl.downlights, { spacing: 120, inset: 55, intensity: 1, angle: 32, trim: '#f4f4f2' });
+    const cv = own(rl.cove, { width: 35, drop: 15, intensity: 1 });
+    const sk = own(rl.skirting, { height: 2 });
+    return {
+      kelvin,
+      downlights: dl && { ...dl, kelvin: dl.kelvin || kelvin },
+      skirting: sk && { ...sk, kelvin: sk.kelvin || kelvin },
+      cove: cv && { ...cv, kelvin: cv.kelvin || kelvin },
+    };
+  }
   const kelvin = rl.kelvin ?? L.kelvin;
   const dlBase = L.downlights;
   const dlOn = !!dlBase && dlBase.enabled !== false && rl.downlights !== false && !(dlBase.skip || ['balcony']).includes(room.type);

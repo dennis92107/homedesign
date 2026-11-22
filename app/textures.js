@@ -132,16 +132,18 @@ export function herringbone({ color = '#a97b52', plankWidth = 10, plankLength = 
   return finish(c, P / 100, key);
 }
 
-export function tiles({ color = '#d9d6d0', grout = '#9c968d', tileSize = 60, groutWidth = 0.3, variation = 0.05, seed = 7, marble = false, veins = 'subtle', veinColor = null } = {}) {
-  const key = `tiles|${color}|${grout}|${tileSize}|${groutWidth}|${variation}|${marble}|${veins}|${veinColor}|${seed}`;
+/** square tiles, or rectangles with tileHeight (cm, the texture's v direction: up a wall), e.g. 120×60 laid flat */
+export function tiles({ color = '#d9d6d0', grout = '#9c968d', tileSize = 60, tileHeight = null, groutWidth = 0.3, variation = 0.05, seed = 7, marble = false, veins = 'subtle', veinColor = null } = {}) {
+  const key = `tiles|${color}|${grout}|${tileSize}|${tileHeight}|${groutWidth}|${variation}|${marble}|${veins}|${veinColor}|${seed}`;
   if (cache.has(key)) return cache.get(key);
   const n = Math.max(1, Math.round(240 / tileSize)); const S = (n * tileSize) / 100;
+  const th = tileHeight || tileSize; const m = Math.max(1, Math.round((n * tileSize) / th)); // rows: the repeat stays square
   const px = 1024; const [c, ctx] = mk(px); const r = rng(seed);
-  const t = px / n; const g = Math.max(1, (groutWidth / tileSize) * t);
+  const t = px / n, tv = px / m; const g = Math.max(1, (groutWidth / tileSize) * t);
   ctx.fillStyle = grout; ctx.fillRect(0, 0, px, px);
-  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+  for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) {
     ctx.fillStyle = shade(color, (r() - 0.5) * 2 * variation);
-    ctx.fillRect(i * t + g / 2, j * t + g / 2, t - g, t - g);
+    ctx.fillRect(i * t + g / 2, j * tv + g / 2, t - g, tv - g);
   }
   if (marble) (veins === 'bold' ? marbleVeinsBold : marbleVeins)(ctx, px, color, r, veinColor);
   noise(ctx, px, 6, r);
@@ -165,8 +167,47 @@ function marbleVeins(ctx, px, color, r) {
   ctx.restore();
 }
 
-export function marble({ color = '#ece9e4', tileSize = 80, grout = '#cfcac2', seed = 11, veins = 'subtle', veinColor = null } = {}) {
-  return tiles({ color, tileSize, grout, groutWidth: 0.15, variation: 0.02, seed, marble: true, veins, veinColor });
+/**
+ * Tiles cut from a real stone photo (e.g. ambientCG CC0 marble): every tile shows a different random crop of the
+ * photo (sometimes turned 180°), so the pattern breaks at the joints like real slabs / printed porcelain.
+ * imageSize = metres the whole photo covers (bigger = larger, sparser veins); brightness / contrast adjust the photo (1 = as is).
+ */
+export function imageTiles({ url, color = '#777777', grout = '#5c5c5c', tileSize = 60, tileHeight = null, groutWidth = 0.2, imageSize = 1, brightness = 1, contrast = 1, invert = false, gray = false, seed = 13 } = {}) {
+  const key = `imgtiles|${url}|${grout}|${tileSize}|${tileHeight}|${groutWidth}|${imageSize}|${brightness}|${contrast}|${invert}|${gray}|${seed}`;
+  if (cache.has(key)) return cache.get(key);
+  const n = Math.max(1, Math.round(240 / tileSize)); const S = (n * tileSize) / 100;
+  const th = tileHeight || tileSize; const m = Math.max(1, Math.round((n * tileSize) / th));
+  const px = 2048; const [c, ctx] = mk(px);
+  const t = px / n, tv = px / m; const g = Math.max(1, (groutWidth / tileSize) * t);
+  ctx.fillStyle = grout; ctx.fillRect(0, 0, px, px);
+  ctx.fillStyle = color; for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) ctx.fillRect(i * t + g / 2, j * tv + g / 2, t - g, tv - g);
+  const tex = finish(c, S, key);
+  const img = new Image(); img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    const r = rng(seed);
+    const pxPerM = img.width / imageSize; // photo pixels per metre
+    const cw = Math.min(img.width, (tileSize / 100) * pxPerM), ch = Math.min(img.height, (th / 100) * pxPerM);
+    ctx.fillStyle = grout; ctx.fillRect(0, 0, px, px);
+    // invert: a light marble photo turned into dark stone with light veins (fewer, finer veins than most dark photos)
+    const fl = [gray && 'grayscale(1)', invert && 'invert(1)', brightness !== 1 && `brightness(${brightness})`, contrast !== 1 && `contrast(${contrast})`].filter(Boolean);
+    if (fl.length) ctx.filter = fl.join(' ');
+    for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) {
+      const sx = r() * (img.width - cw), sy = r() * (img.height - ch), flip = r() < 0.5;
+      const x = i * t + g / 2, y = j * tv + g / 2, w = t - g, h = tv - g;
+      ctx.save();
+      if (flip) { ctx.translate(x + w, y + h); ctx.rotate(Math.PI); ctx.drawImage(img, sx, sy, cw, ch, 0, 0, w, h); }
+      else ctx.drawImage(img, sx, sy, cw, ch, x, y, w, h);
+      ctx.restore();
+    }
+    ctx.filter = 'none';
+    tex.needsUpdate = true;
+  };
+  img.src = url;
+  return tex;
+}
+
+export function marble({ color = '#ece9e4', tileSize = 80, tileHeight = null, grout = '#cfcac2', seed = 11, veins = 'subtle', veinColor = null } = {}) {
+  return tiles({ color, tileSize, tileHeight, grout, groutWidth: 0.15, variation: 0.02, seed, marble: true, veins, veinColor });
 }
 
 /** Calacatta / Statuario look: soft grey clouds, a few bold diagonal veins with blurred halos, fine branches */

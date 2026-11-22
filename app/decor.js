@@ -459,7 +459,7 @@ export function addDecor(obj, it, item, ctx, env) {
     } else { const l = add(lamp(ctx, 0.45), 0, -d * 0.12); l.userData.settle = { mode: 'top', x: 0, z: -d * 0.12 }; }
     const b = add(books(ctx, 2, seed, { maxW: 0.22 }), w * 0.12, d * 0.22, 0.3); b.userData.decorPiece = 'books'; b.userData.settle = { mode: 'top', x: w * 0.12, z: d * 0.22 };
   }
-  if (t === 'desk' && acc) {
+  if (t === 'desk' && acc && !it.computers) { // a desk carrying computers (必備物品) keeps its top clear for screens
     const l = add(lamp(ctx, 0.42), w / 2 - 0.16, -d / 2 + 0.14); l.userData.settle = { mode: 'top', x: w / 2 - 0.16, z: -d / 2 + 0.14 };
     const b = add(books(ctx, 3, seed, { maxW: 0.24 }), -w / 2 + 0.18, -d / 2 + 0.16, 0.1); b.userData.decorPiece = 'books'; b.userData.settle = { mode: 'top', x: -w / 2 + 0.18, z: -d / 2 + 0.16 };
     if (w > 0.9) { // closed laptop
@@ -490,7 +490,8 @@ export function addDecor(obj, it, item, ctx, env) {
   }
   // the TV belongs to the cabinet, not to the accessories (stays when they are off, survives the model swap)
   if (t === 'tv_cabinet' && it.tv !== false) {
-    const tw = Math.min(w * 0.8, 1.45), th = tw * 0.5625;
+    // tvInch: the real set (75" = 166 × 93 cm); otherwise sized to the cabinet
+    const tw = it.tvInch ? it.tvInch * 0.0254 * 0.8716 : Math.min(w * 0.8, 1.45), th = tw * 0.5625;
     const tv = piece('tv', it.wallTv ? null : { mode: 'top', x: 0, z: -0.04 }, { keep: true });
     const scr = ctx.M.screen, frame = ctx.M.metal;
     if (it.wallTv) { const s = mesh(new THREE.BoxGeometry(tw, th, 0.03), scr); s.position.set(0, 1.0 + th / 2, -d / 2 + 0.03); tv.add(s); }

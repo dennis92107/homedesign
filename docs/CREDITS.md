@@ -7,6 +7,7 @@
 | `assets/models/mannequiny.glb` 170 cm 人形比例尺（無臉假人） | GDQuest「Mannequiny – The Open 3D Mannequin」0.4.0，經 [OpenGameArt](https://opengameart.org/content/mannequiny-the-open-3d-mannequin)；網頁載入時套用 idle 姿勢、縮到 170 cm、換成單一米白材質 | CC BY 4.0（需標示出處） |
 | `assets/models/sheen_chair.glb` 絲絨金屬腳單椅 | Wayfair LLC，經 [Khronos glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/SheenChair) | CC BY 4.0（需標示出處） |
 | `assets/models/abo_*.glb`、`models/abo_index.json` 免費模型庫 | [Amazon Berkeley Objects (ABO)](https://amazon-berkeley-objects.s3.amazonaws.com/index.html)，Amazon 自有品牌真實商品 | **CC BY-NC 4.0**（需標示出處、僅限非商業使用） |
+| `assets/textures/acg_marble012_color.jpg` 大理石照片（勝旺衛浴牆地磚：灰階＋反相成深灰底白紋，切成 60×120 / 60×60 磚） | [ambientCG Marble 012](https://ambientcg.com/view?id=Marble012) | CC0 |
 | Three.js、three-gpu-pathtracer、three-mesh-bvh、meshoptimizer（模型減面） | jsdelivr CDN | MIT |
 
 **2026-11-22 真實版預設模型**（全部 ABO，CC BY-NC 4.0，Amazon 自有品牌 Rivet / Movian / Ravenna Home / Stone & Beam 等商品；id 為 Amazon ASIN）：

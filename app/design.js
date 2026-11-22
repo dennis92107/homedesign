@@ -6,8 +6,11 @@
 //   "style":  { ...與 Style JSON 同結構的覆寫：wall / floor / ceiling / rooms.<房間名稱> / wallFaces / materials / decor / doors / windows ... },
 //   "furniture": { "<家具 id>": { hidden, removed, colors, model, tint, variant, x, y, rotation, w, d, h, elevation, shape } },
 //   "added": [ { id, type, x, y, ... } ],        // 新增的家具（UI 或 Claude 依參考圖加入）
-//   "hiddenCategories": [ "decor", ... ]         // 整類隱藏
+//   "hiddenCategories": [ "decor", ... ],        // 整類隱藏
+//   "essentials": [ { id, kind: "workstation"|"tv", ... } ]   // 必備物品：不寫座標，依格局自動擺（essentials.js）
 // }
+
+import { placeEssentials } from './essentials.js';
 
 export const emptyDesign = () => ({ version: 1, style: {}, furniture: {}, added: [], hiddenCategories: [] });
 export const designPathFor = (planUrl) => 'designs/' + (planUrl || 'plan.json').split('/').pop();
@@ -63,6 +66,7 @@ export const TYPE_LABELS = {
   dining_table: '餐桌', desk: '書桌', island: '中島', tv_cabinet: '電視櫃', sideboard: '矮櫃', wardrobe: '衣櫃', bookshelf: '書櫃',
   shoe_cabinet: '鞋櫃', nightstand: '床頭櫃', bed: '床', kitchen_counter: '廚具', fridge: '冰箱', toilet: '馬桶', vanity: '浴櫃',
   bathtub: '浴缸', shower: '淋浴間', floor_lamp: '立燈', rug: '地毯', art: '掛畫', mirror: '鏡子', plant: '植栽', box: '方塊', cylinder: '圓柱', display_shelf: '展示層架', slat_panel: '格柵板', ring_light: '圓形燈帶',
+  monitor: '電腦螢幕', pc_tower: '電腦主機',
 };
 export const CATEGORIES = {
   seating: { label: '沙發座椅', types: ['sofa', 'armchair', 'chair', 'ottoman', 'stool'] },
@@ -72,6 +76,7 @@ export const CATEGORIES = {
   kitchen: { label: '廚房', types: ['kitchen_counter', 'fridge'] },
   bath: { label: '衛浴', types: ['toilet', 'vanity', 'bathtub', 'shower'] },
   lighting: { label: '燈具', types: ['floor_lamp', 'ring_light'] },
+  tech: { label: '電腦設備', types: ['monitor', 'pc_tower'] },
   decor: { label: '軟裝植栽', types: ['rug', 'art', 'mirror', 'plant', 'box', 'cylinder'] },
 };
 export function categoryOf(type) {
@@ -102,6 +107,13 @@ export function setFurniturePatch(d, id, patch) {
 export function effective(plan, style, design) {
   const d = design || emptyDesign();
   const s = deepMerge(style || {}, d.style || {});
+  // 🔒 鎖定房間（客製層 style.rooms.<房間名稱>.locked = true）：這間只用客製層自己的設定，樣板寫到這間的
+  // 房間設定、單面牆都不採用 → 換任何樣板都不變（例：建商交屋的衛浴，不重新裝修）。房型設定的略過在 builder roomStyle。
+  for (const [name, spec] of Object.entries(d.style?.rooms || {})) {
+    if (!spec?.locked) continue;
+    s.rooms = { ...s.rooms, [name]: deepMerge({}, spec) };
+    if (s.wallFaces) s.wallFaces = Object.fromEntries(Object.entries(s.wallFaces).filter(([k]) => !k.startsWith(name + '|') || d.style?.wallFaces?.[k]));
+  }
   const hiddenCats = new Set(d.hiddenCategories || []);
   const items = [
     ...(plan.furniture || []).map((it, i) => ({ ...it, id: itemId(it, i), origin: 'plan' })),
@@ -118,7 +130,24 @@ export function effective(plan, style, design) {
     m.customized = !!o && Object.keys(rest).length > 0;
     out.push(m);
   }
-  return { plan: { ...plan, furniture: out }, style: s };
+  // 必備物品（design.essentials）：依目前格局自動擺放；使用者在 design.furniture 對同一 id 的設定（拖過的位置、隱藏、刪除）優先
+  const ess = placeEssentials(plan, out, d.essentials);
+  for (const m of out) {
+    const p = ess.patches[m.id]; if (!p) continue;
+    const o = d.furniture?.[m.id] || {};
+    for (const [k, v] of Object.entries(p)) if (o[k] === undefined) m[k] = v;
+  }
+  for (const it of ess.added) {
+    const o = d.furniture?.[it.id];
+    if (o?.removed) continue;
+    const { hidden, removed, ...rest } = o || {};
+    const m = o ? deepMerge(it, rest) : { ...it };
+    m.origin = 'essential';
+    m.hidden = !!hidden || hiddenCats.has(categoryOf(it.type));
+    m.customized = !!o && Object.keys(rest).length > 0;
+    out.push(m);
+  }
+  return { plan: { ...plan, furniture: out }, style: s, essentialNotes: ess.notes };
 }
 
 /** list of removed items (so the UI can offer restore) */

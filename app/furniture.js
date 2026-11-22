@@ -218,7 +218,9 @@ F.desk = (it, M, S_) => {
   B(g, w, 0.03, d, M.wood, 0, h - 0.03);
   legs(g, w, d, h - 0.03, M, S_.legs === 'plinth' ? 'block' : (S_.legs || 'metal'), 0.04);
   // lamp / books / laptop: decor.js · the chair is a slot like the dining chairs (gets the default chair model)
-  if (it.chair !== false) { const c = chair(M, S_, it.chairStyle || 'upholstered'); c.userData.slot = { type: 'chair', w: 0.46, d: 0.52, h: 0.9, style: it.chairStyle || 'upholstered' }; c.position.z = d / 2 + 0.05; c.rotation.y = Math.PI; g.add(c); }
+  // chairs: n seats spread along the desk (a long desk shared by two people)
+  const nc = it.chair === false ? 0 : Math.max(1, it.chairs || 1);
+  for (let i = 0; i < nc; i++) { const c = chair(M, S_, it.chairStyle || 'upholstered'); c.userData.slot = { type: 'chair', w: 0.46, d: 0.52, h: 0.9, style: it.chairStyle || 'upholstered' }; c.position.set(-w / 2 + (w / nc) * (i + 0.5), 0, d / 2 + 0.05); c.rotation.y = Math.PI; g.add(c); }
   return g;
 };
 
@@ -298,9 +300,19 @@ F.toilet = (it, M) => {
 F.vanity = (it, M, S_) => {
   const g = new THREE.Group(); const w = it.w || 0.9, d = it.d || 0.5;
   B(g, w, 0.45, d, M.wood, 0, 0.35);
-  B(g, w, 0.02, d, M.countertop, 0, 0.8);
-  const bowl = C(g, 0.2, 0.15, 0.13, M.ceramic, 0, 0.82, 0.02, 32);
-  C(g, 0.17, 0.17, 0.006, M.dark, 0, 0.945, 0.02, 32);
+  if (it.basin === 'undermount') { // white solid-surface top with the basin sunk in (Taiwan builder standard)
+    B(g, w, 0.03, d, M.countertop, 0, 0.8);
+    const bw = Math.min(0.46, w * 0.7) / 2, bd = Math.min(0.34, d * 0.7) / 2;
+    // stacked discs, each top 1 mm above the one below (coplanar tops flicker)
+    const ell = C(g, 1, 1, 0.004, M.ceramic, 0, 0.8295, 0.02, 48); ell.scale.set(bw, 1, bd); // basin rim, top 0.8335
+    const pit = C(g, 1, 1, 0.004, new THREE.MeshStandardMaterial({ color: 0xd9d9d6, roughness: 0.2 }), 0, 0.8305, 0.02, 48); pit.scale.set(bw * 0.88, 1, bd * 0.85); // basin bowl in shade, top 0.8345
+    C(g, 0.018, 0.018, 0.004, M.metal, 0, 0.8315, 0.04, 16); // drain, top 0.8355
+    B(g, w, 0.003, 0.02, M.countertop, 0, 0.83, d / 2 - 0.01); // front edge lip
+  } else {
+    B(g, w, 0.02, d, M.countertop, 0, 0.8);
+    C(g, 0.2, 0.15, 0.13, M.ceramic, 0, 0.82, 0.02, 32);
+    C(g, 0.17, 0.17, 0.006, M.dark, 0, 0.945, 0.02, 32);
+  }
   C(g, 0.01, 0.01, 0.22, M.metal, 0, 0.82, -d / 2 + 0.06, 8); B(g, 0.02, 0.02, 0.13, M.metal, 0, 1.03, -d / 2 + 0.12);
   B(g, w * 0.9, 0.8, 0.02, M.mirror, 0, 1.15, -d / 2 + 0.01);
   return g;
@@ -316,9 +328,21 @@ F.bathtub = (it, M) => {
   return g;
 };
 
+// tray: false = tiled floor runs through (no raised base); frame: true = thin metal channels on the glass edges
+// + a hinged door with a bar handle (Taiwan builder-standard screen)
 F.shower = (it, M) => {
   const g = new THREE.Group(); const w = it.w || 0.9, d = it.d || 0.9;
-  B(g, w, 0.04, d, M.ceramic); B(g, w, 2.0, 0.01, M.glassClear || M.glass, 0, 0.04, d / 2);
+  const base = it.tray === false ? 0 : 0.04, gh = 2.0, glass = M.glassClear || M.glass;
+  if (base) B(g, w, base, d, M.ceramic);
+  B(g, w, gh, 0.01, glass, 0, base, d / 2);
+  if (it.frame) {
+    const f = 0.018;
+    B(g, f, gh, f, M.metal, -w / 2 + f / 2, base, d / 2); B(g, f, gh, f, M.metal, w / 2 - f / 2, base, d / 2); // wall channels
+    B(g, w, 0.012, f, M.metal, 0, base, d / 2); // bottom sill
+    B(g, f * 0.8, gh, f, M.metal, 0, base, d / 2); // fixed pane | door
+    B(g, 0.03, 0.03, 0.012, M.metal, w * 0.06, base + 1.0, d / 2 + 0.03); B(g, 0.03, 0.03, 0.012, M.metal, w * 0.06, base + 1.45, d / 2 + 0.03);
+    C(g, 0.008, 0.008, 0.45, M.metal, w * 0.06, base + 1.0, d / 2 + 0.045, 8); // bar handle
+  }
   C(g, 0.012, 0.012, 1.9, M.metal, w / 2 - 0.15, 0, -d / 2 + 0.05, 8); C(g, 0.11, 0.11, 0.015, M.metal, w / 2 - 0.15, 1.95, -d / 2 + 0.17, 24);
   return g;
 };
@@ -494,8 +518,36 @@ F.ring_light = (it) => {
   ring.rotation.x = Math.PI / 2; ring.position.y = -0.004; ring.userData.lightGlow = true; g.add(ring);
   return g;
 };
+// computer monitor on a desk (stand + 16:9 panel). inch = diagonal (27" panel ≈ 59.8 × 33.6 cm); place with
+// elevation = desk height (75). The panel's lower edge sits ~11 cm above the desk so the top is near seated eye level.
+F.monitor = (it, M) => {
+  const g = new THREE.Group(); const inch = it.inch || 27;
+  const sw = inch * 0.0254 * 0.8716, sh = sw * 0.5625, bz = 0.008;
+  const screen = M.screen, body = M.dark;
+  B(g, 0.24, 0.012, 0.18, body, 0, 0, -0.02); // base
+  B(g, 0.05, 0.17, 0.025, body, 0, 0.012, -0.07); // neck
+  B(g, sw + bz * 2, sh + bz * 2, 0.02, body, 0, 0.11, -0.045); // housing
+  B(g, sw, sh, 0.003, screen, 0, 0.11 + bz, -0.034); // panel, 1.5 mm proud of the housing
+  if (it.keyboard !== false) { // keyboard + mouse in front of the screen (the monitor stands ~27 cm from the desk's back edge)
+    B(g, 0.44, 0.018, 0.14, body, 0, 0, 0.22);
+    B(g, 0.42, 0.004, 0.12, M.metal, 0, 0.018, 0.22); // key field, slightly lighter
+    B(g, 0.06, 0.03, 0.1, body, 0.32, 0, 0.22); // mouse
+  }
+  return g;
+};
+// desktop PC tower (mid tower ≈ 22 × 48 × 46 cm), stands on the floor under / beside the desk
+F.pc_tower = (it, M) => {
+  const g = new THREE.Group(); const w = it.w || 0.22, d = it.d || 0.46, h = it.h || 0.48;
+  B(g, w, 0.02, d - 0.04, M.dark, 0, 0, 0); // feet
+  B(g, w, h - 0.02, d, M.dark, 0, 0.02, 0);
+  B(g, 0.008, h * 0.7, d * 0.8, M.glassClear || M.glass, w / 2 + 0.002, 0.02 + h * 0.15, 0); // side window
+  const led = fmat('pcled', () => new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#9fc8ff', emissiveIntensity: 1.2, roughness: 1 }));
+  B(g, w * 0.5, 0.006, 0.004, led, 0, h - 0.06, d / 2 + 0.001); // power LED strip
+  return g;
+};
 export const FURNITURE = F;
 export const DEFAULT_SIZES = {
+  monitor: [62, 22], pc_tower: [22, 46],
   sofa: [220, 92], armchair: [80, 80], coffee_table: [110, 60], side_table: [45, 45], tv_cabinet: [180, 42],
   sideboard: [160, 45], chair: [46, 48], dining_table: [160, 90], bed: [180, 210], nightstand: [48, 40],
   wardrobe: [200, 60], desk: [120, 60], bookshelf: [100, 35], kitchen_counter: [300, 60], island: [180, 90],
