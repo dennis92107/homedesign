@@ -42,6 +42,14 @@
         "color": "#d9d6d0",
         "tileSize": 60
       }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#cfccc6",
+        "tileSize": 30,
+        "grout": "#a8a49d"
+      }
     }
   },
   "doors": {

@@ -54,6 +54,14 @@
         "slat": 3,
         "gap": 1
       }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#d6d1c9",
+        "tileSize": 40,
+        "grout": "#aca69d"
+      }
     }
   },
   "doors": {

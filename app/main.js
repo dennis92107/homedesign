@@ -980,4 +980,4 @@ function setSize(w, h) {
   gtao.setSize(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
   camera.aspect = w / h; camera.updateProjectionMatrix(); ptCamera();
 }
-window.app = { accum, zfight, store, exportBundle, importChanges, pendingChanges, setSize, composer, gtao, commit, select, pickAt, editor: () => editor, state, frame, load, rebuild, enterWalkAt, camera, scene, renderer, walk, snap, ptSamples, setPT, applyLighting, assetStats, get pathTracer() { return pathTracer; } };
+window.app = { accum, zfight, store, exportBundle, importChanges, pendingChanges, setSize, composer, gtao, commit, select, pickAt, editor: () => editor, state, frame, load, rebuild, enterWalkAt, camera, orbit, scene, renderer, walk, snap, ptSamples, setPT, applyLighting, assetStats, get pathTracer() { return pathTracer; } };

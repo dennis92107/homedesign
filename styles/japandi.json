@@ -52,6 +52,14 @@
         "material": "limewash",
         "color": "#e9e0d0"
       }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#c9c1b4",
+        "tileSize": 30,
+        "grout": "#a39a8c"
+      }
     }
   },
   "doors": {

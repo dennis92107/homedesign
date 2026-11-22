@@ -50,6 +50,14 @@
         "material": "concrete",
         "color": "#8e8c87"
       }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#8f8d89",
+        "tileSize": 30,
+        "grout": "#5f5d5a"
+      }
     }
   },
   "doors": {
