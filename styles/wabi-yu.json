@@ -1,6 +1,6 @@
 {
   "name": "侘寂・域（東喬參考）",
-  "description": "暖灰礦物塗料牆、淺灰橡木寬板地板、奶油白布沙發、無把手白色整面櫃＋淺橡木板、深胡桃圓餐桌點綴、灰褐落地簾＋白紗、2700–3000K 暖光。",
+  "description": "暖灰礦物塗料牆、淺灰橡木寬板地板、奶油白布沙發、無把手白色整面櫃＋淺橡木板、深胡桃圓餐桌點綴、灰褐落地簾＋白紗、2700–3000K 暖光。 2026-11-22 微調：亞麻罩套沙發、Y 字椅、橢圓實木茶几、深胡桃餐桌、飛碟吊燈、木碗蠟燭、枯枝花器、圓盤壁燈、床頭半高木牆裙、蘑菇檯燈、Moon 吊燈、皺褶寢具、雙層窗簾、線條平織地毯。",
   "palette": [
     "#d0c7bc",
     "#e4ddd1",
@@ -102,22 +102,54 @@
     "tableTop": "wood",
     "handles": "none"
   },
-  "models": {},
+  "models": {
+    "sofa": [
+      {
+        "id": "local:abo_B07B4MG9H2",
+        "if": {
+          "chaise": true
+        }
+      },
+      {
+        "id": "local:abo_B07B4FWQFJ"
+      }
+    ],
+    "chair": "local:abo_B084T7WS8J",
+    "coffee_table": "local:abo_B07SG5G5JJ",
+    "dining_table": [
+      {
+        "id": "local:abo_B075YV7SKC",
+        "if": {
+          "shape": "round"
+        },
+        "roles": {
+          "\"B075YV7SKC_TRB_MDL_MR\"": "woodDark"
+        }
+      },
+      {
+        "id": "local:abo_B075YQXRJM",
+        "roles": {
+          "\"AOFIJONPLOBAAAAAFMBAAAAAAAAAICBECCPO\"": "woodDark"
+        }
+      }
+    ]
+  },
   "decor": {
     "rugs": true,
     "rug": {
       "color": "#8f8a84",
-      "accent": "#817c76",
-      "pattern": "solid"
+      "accent": "#6f6a64",
+      "pattern": "ribbed"
     },
     "plants": false,
     "curtains": {
       "enabled": true,
       "color": "#9a9289",
       "sheer": false,
-      "length": "floor"
+      "length": "floor",
+      "sheerLayer": "#f2eee8"
     },
-    "pendant": "globe",
+    "pendant": "saucer",
     "artPalette": [
       "#2f3430",
       "#5b4434",
@@ -130,7 +162,27 @@
       "#e4ddd1",
       "#5b4434",
       "#b9a68d"
-    ]
+    ],
+    "accessories": true,
+    "softColors": [
+      "#b8ab9b",
+      "#cfc6bb",
+      "#9a8f84"
+    ],
+    "tabletop": "bowl",
+    "branches": true,
+    "sofaWall": "sconce",
+    "bedWallArt": "small",
+    "artKind": "texture",
+    "tableLamp": "mushroom",
+    "bedPendant": "moon",
+    "bedRunner": false,
+    "pillowColor": "#b5a796",
+    "bedWall": {
+      "height": 105,
+      "role": "wood"
+    },
+    "pillows": "plain"
   },
   "lighting": {
     "exposure": 1.0,
@@ -139,9 +191,37 @@
     "ambient": 0.5,
     "environment": 0.3,
     "room": {
-      "color": "#ffd09a",
-      "intensity": 3.5
+      "intensity": 3.5,
+      "fixture": false
     },
-    "background": "#e7e2da"
+    "background": "#e7e2da",
+    "kelvin": 3000,
+    "downlights": {
+      "enabled": true,
+      "spacing": 130,
+      "inset": 60,
+      "intensity": 1,
+      "angle": 32,
+      "trim": "#1f1d1b"
+    },
+    "toneMapping": "agx",
+    "grade": {
+      "saturation": 0.9,
+      "contrast": 1.04,
+      "warmth": 0.15,
+      "tint": 0,
+      "blacks": 0.015,
+      "vignette": 0.18
+    },
+    "bloom": {
+      "strength": 0.33,
+      "radius": 0.45,
+      "threshold": 5
+    }
+  },
+  "wallFaces": {
+    "客廳|19|N": {
+      "wash": true
+    }
   }
 }

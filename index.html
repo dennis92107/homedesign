@@ -115,6 +115,20 @@
   .lib-card span { display: block; max-height: 2.6em; overflow: hidden; margin-top: 3px; }
   .lib-card.busy { opacity: .5; pointer-events: none; }
   details.removed { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  #shotDlg { border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); padding: 18px 20px; width: 360px; }
+  #shotDlg::backdrop { background: #0006; }
+  #shotDlg h3 { margin: 0 0 10px; font-size: 16px; }
+  #shotDlg label.row { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+  #shotDlg select { margin: 0; }
+  #shotDlg .bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 10px 0 4px; }
+  #shotDlg .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  #shotDlg .btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  #bakeBox { margin-top: 4px; }
+  .bake-opts { display: flex; gap: 8px; align-items: center; }
+  .bake-opts select { flex: 1; margin: 0; padding: 4px 8px; font-size: 12px; }
+  .bake-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 6px 0 2px; }
+  .bake-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  #bakeBtn.stale { border-color: #e5484d; box-shadow: inset 0 0 0 1px #e5484d; }
   #ptInfo { display: none; margin-top: 6px; }
   body.pt #ptInfo { display: block; }
   .toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
@@ -143,6 +157,14 @@
   body.panel-hidden #togglePanel { right: 12px; }
   #walkHelp { position: fixed; left: 16px; bottom: 16px; background: #000b; color: #fff; padding: 8px 12px; border-radius: 10px; font-size: 12px; display: none; pointer-events: none; }
   body.walking #walkHelp { display: block; }
+  #walkHelp .photo-only, body.photo #walkHelp .walk-only { display: none; }
+  body.photo #walkHelp .photo-only { display: inline; }
+  #photoHud { position: fixed; left: 16px; top: 12px; background: #000b; color: #fff; padding: 5px 10px; border-radius: 8px; font-size: 12px; display: none; pointer-events: none; z-index: 4; }
+  #photoGrid { position: absolute; inset: 0; display: none; pointer-events: none; z-index: 2;
+    background: linear-gradient(to right, transparent calc(33.333% - .5px), #fff5 calc(33.333% - .5px), #fff5 calc(33.333% + .5px), transparent calc(33.333% + .5px), transparent calc(66.667% - .5px), #fff5 calc(66.667% - .5px), #fff5 calc(66.667% + .5px), transparent calc(66.667% + .5px)),
+                linear-gradient(to bottom, transparent calc(33.333% - .5px), #fff5 calc(33.333% - .5px), #fff5 calc(33.333% + .5px), transparent calc(33.333% + .5px), transparent calc(66.667% - .5px), #fff5 calc(66.667% - .5px), #fff5 calc(66.667% + .5px), transparent calc(66.667% + .5px)); }
+  body.photo #photoHud, body.photo.grid #photoGrid { display: block; }
+  body.pt #photoGrid { display: none; }
   #hint { position: fixed; left: 16px; bottom: 16px; background: var(--panel); padding: 6px 10px; border-radius: 10px; font-size: 12px; color: var(--muted); border: 1px solid var(--line); }
   body.walking #hint { display: none; }
   kbd { font: 11px ui-monospace, monospace; border: 1px solid #fff5; border-radius: 4px; padding: 0 4px; }
@@ -161,15 +183,17 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/",
   "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/",
   "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.16/src/index.js",
-  "three-gpu-pathtracer": "https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.27/src/index.js"
+  "three-gpu-pathtracer": "https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.27/src/index.js",
+  "meshoptimizer/": "https://cdn.jsdelivr.net/npm/meshoptimizer@0.21.0/"
 } }
 </script>
 </head>
 <body>
-<div id="viewport"><div id="planEditor" hidden></div></div>
+<div id="viewport"><div id="planEditor" hidden></div><div id="photoGrid"></div></div>
 <button id="togglePanel" title="顯示/隱藏面板">☰</button>
 <div id="hint">拖曳旋轉 · 滾輪縮放 · 右鍵平移 · <b>雙擊地板</b>進入漫遊 · <b>點家具</b>後可直接拖曳、拉圓環轉向（<kbd>Shift</kbd> 不吸附、方向鍵微調、<kbd>R</kbd> 轉 90°、<kbd>Ctrl</kbd>+<kbd>Z</kbd> 復原）</div>
-<div id="walkHelp"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動 · <kbd>Shift</kbd> 快走 · 拖曳滑鼠轉頭 · <kbd>Q</kbd>/<kbd>E</kbd> 轉向 · 滾輪改視角 · <kbd>Esc</kbd> 離開</div>
+<div id="walkHelp"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動 · <kbd>Shift</kbd> 快走 · <span class="walk-only">拖曳滑鼠轉頭 · </span><span class="photo-only">左右拖曳轉向、上下拖曳＝鏡頭位移（牆線保持垂直） · </span><kbd>Q</kbd>/<kbd>E</kbd> 轉向 · <span class="walk-only">滾輪改視角</span><span class="photo-only">滾輪改焦距</span> · <kbd>P</kbd> 攝影模式 · <kbd>Esc</kbd> 離開</div>
+<div id="photoHud"></div>
 
 <aside>
   <h1>HomeDesign 3D</h1>
@@ -182,7 +206,45 @@
     <button data-view="walk">室內漫遊</button>
   </div>
   <button id="ptBtn" class="wide" style="margin-top:6px">✨ 真實渲染（光線追蹤）</button>
-  <div id="ptInfo" class="sub">靜止時逐步收斂成照片級畫面，移動視角會重新計算 · <span id="ptSamples"></span> · <label title="取樣少時先做保留邊緣的降噪，取樣越多越弱，收斂後自動關閉"><input type="checkbox" id="ptDenoise" checked> 降噪</label></div>
+  <div id="ptInfo" class="sub">靜止時逐步收斂成照片級畫面，移動視角會重新計算 · <span id="ptSamples"></span> · <label title="取樣少時先做保留邊緣的降噪，取樣越多越弱，收斂後自動關閉"><input type="checkbox" id="ptDenoise" checked> 降噪</label> · <label title="漫遊時像相機測光：白天只靠窗戶進光，深色樣板會自動提高曝光（窗外可能過曝，室內攝影的常見做法）；晚上只微調"><input type="checkbox" id="ptAuto" checked> 自動曝光</label></div>
+  <button id="shotBtn" class="wide" style="margin-top:6px">📷 輸出高解析照片</button>
+  <button id="bakeBtn" class="wide" style="margin-top:6px" title="預先算好牆、地板、天花的反彈光與窗外天光（全域光照），即時走動也有牆角陰影與色彩互染">🔆 烘焙光照</button>
+  <div id="bakeBox" class="sub">
+    <div class="bake-opts"><select id="bakeQuality" title="烘焙品質（樣本數越多越乾淨、越久）">
+      <option value="256">快速（256 樣本，約 10 秒）</option>
+      <option value="1024" selected>標準（1024 樣本，約 40 秒）</option>
+      <option value="2048">精細（2048 樣本，約 80 秒）</option>
+    </select><label id="bakeUseWrap" class="inline" hidden title="關掉可比較烘焙前後"><input type="checkbox" id="bakeUse" checked> 使用</label></div>
+    <div id="bakeBarWrap" class="bake-bar" hidden><i id="bakeBar"></i></div>
+    <span id="bakeMsg"></span>
+  </div>
+  <dialog id="shotDlg">
+    <h3>📷 輸出高解析照片</h3>
+    <p class="sub" style="margin-bottom:10px">用光線追蹤從目前的視角出一張照片（PNG）。建議先到「室內漫遊」站好位置再按。</p>
+    <label class="row">解析度 <select id="shotSize">
+      <option value="1920x1080">1920 × 1080（Full HD）</option>
+      <option value="2560x1440" selected>2560 × 1440（2K）</option>
+      <option value="3840x2160">3840 × 2160（4K，很慢）</option>
+    </select></label>
+    <label class="row">品質 <select id="shotSamples">
+      <option value="128">草稿（128 樣本）</option>
+      <option value="256" selected>標準（256 樣本）</option>
+      <option value="512">精細（512 樣本）</option>
+    </select></label>
+    <label class="row">燈光 <select id="shotLights">
+      <option value="on" selected>開燈（嵌燈、燈槽、檯燈）</option>
+      <option value="off">關燈，只用日光</option>
+      <option value="auto">依時間（晚上才開燈）</option>
+    </select></label>
+    <label class="row">鏡頭 <select id="shotLens">
+      <option value="24" selected>24mm 廣角＋垂直校正（室內攝影）</option>
+      <option value="35">35mm＋垂直校正</option>
+      <option value="current">維持目前畫面（攝影模式的焦距與位移）</option>
+    </select></label>
+    <div class="bar"><i id="shotBar"></i></div>
+    <p class="sub" id="shotMsg">就緒</p>
+    <div class="btns"><button id="shotCancel">關閉</button><button id="shotGo" class="wide" style="width:auto">開始輸出</button></div>
+  </dialog>
 
   <nav class="tabs">
     <button data-tab="template">樣板</button>
@@ -216,6 +278,9 @@
       <label><input type="checkbox" id="pbrToggle"><span>真實素材/模型</span></label>
       <label><input type="checkbox" id="aoToggle"><span>環境光遮蔽</span></label>
       <label title="鏡頭停住後連續疊加 32 張微偏移的畫面：反鋸齒、環境光遮蔽更細緻"><input type="checkbox" id="accumToggle" checked><span>靜止時提高畫質</span></label>
+      <label title="室內漫遊時，拋光石材、磁磚、木地板會映出家具與窗戶（螢幕空間反射；只反射畫面裡看得到的東西；走動時暫停、停下來才計算以保持流暢）"><input type="checkbox" id="reflectToggle" checked><span>地板反射</span></label>
+      <label title="像相片後製：白平衡、對比、飽和度、暗角，燈罩/燈帶/亮窗會有微微光暈（每套樣板各有一組，lighting.grade / lighting.bloom）"><input type="checkbox" id="gradeToggle" checked><span>調色＋光暈</span></label>
+      <label title="室內漫遊時像相機/眼睛一樣測光：深色樣板白天自動提高曝光，約 0.4 秒平滑適應；晚上與鳥瞰不作用（lighting.autoExposure）"><input type="checkbox" id="autoExpToggle" checked><span>自動曝光</span></label>
     </div>
     <div id="assetStatus" class="sub"></div>
     <h2>顯示</h2>
@@ -226,14 +291,26 @@
       <label><input type="checkbox" id="underlayToggle"><span>原圖疊圖</span></label>
       <label><input type="checkbox" id="liveToggle"><span>即時同步</span></label>
     </div>
+    <h2>📷 攝影模式（室內漫遊）</h2>
+    <div class="toggles">
+      <label title="像室內攝影師：相機水平、胸口高度、廣角，用鏡頭位移取上下景，牆線保持垂直（快捷鍵 P）"><input type="checkbox" id="photoToggle"><span>攝影模式</span></label>
+      <label title="三分法構圖輔助線（截圖不會出現）"><input type="checkbox" id="photoGridToggle" checked><span>構圖格線</span></label>
+    </div>
+    <div class="row"><span class="sub">焦距（全片幅等效）</span><b id="photoMMVal">24 mm</b></div>
+    <input type="range" id="photoMM" min="14" max="50" step="1" value="24" />
+    <div class="row"><span class="sub">相機高度</span><b id="photoEyeVal">125 cm</b></div>
+    <input type="range" id="photoEye" min="90" max="170" step="5" value="125" />
+    <div class="row"><span class="sub">鏡頭位移（上下取景）</span><b id="photoShiftVal">−5%</b> <button id="photoCenter" title="位移歸零" style="padding:0 8px">置中</button></div>
+    <input type="range" id="photoShift" min="-45" max="45" step="1" value="-5" />
+    <p class="sub">室內攝影常用 24 mm、相機放胸口高度並保持水平，用移軸鏡頭的「位移」取上下景，牆線才不會歪。高解析輸出時選「維持目前畫面」就會照這個構圖。</p>
     <h2>家裡 ↔ 公司</h2>
     <p id="syncMode" class="sub"></p>
     <div class="row-actions sync-actions">
       <button id="exportBtn">⬇ 匯出</button>
-      <button id="importBtn">⬆ 匯入變更</button>
+      <button id="importBtn" title="變更包、快照，或別人給的樣板 / 平面圖 JSON 都可以（也能直接把檔案拖進畫面）">⬆ 匯入</button>
     </div>
-    <input type="file" id="importFile" accept=".json,application/json" hidden>
-    <p class="sub">家裡匯出「完整快照」→ 公司匯入後繼續改 → 公司匯出「變更」→ 回家匯入。兩邊都有改的會自動合併。</p>
+    <input type="file" id="importFile" accept=".json,application/json" multiple hidden>
+    <p class="sub">家裡匯出「完整快照」→ 公司匯入後繼續改 → 公司匯出「變更」→ 回家匯入。兩邊都有改的會自動合併。別人給的樣板（styles/xxx.json）或平面圖 JSON 也直接按「匯入」或拖進畫面：同檔名會更新，新的會加進下拉選單。</p>
     <button id="clearLocalBtn" class="wide" hidden>清除這台電腦的本機修改</button>
     <h2>日照時間</h2>
     <div class="row"><span class="sub">清晨 → 夜晚</span><b id="hourLabel">15:00</b></div>

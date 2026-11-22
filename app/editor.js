@@ -4,7 +4,7 @@ import {
   getPath, setPath, deletePath, isObj, TYPE_LABELS, CATEGORIES, categoryOf, ROLE_LABELS, SURFACE_TYPES, removedItems,
 } from './design.js';
 import { pointInPoly, centroid } from './builder.js';
-import { modelsForType, modelEntry, modelDetails, MODEL_DEFAULTS } from './assets.js';
+import { modelsForType, modelEntry, modelDetails, pickDefault, pickSpec } from './assets.js';
 import { DEFAULT_SIZES } from './furniture.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -63,7 +63,7 @@ export function createEditor(api) {
     g('g:baseboard', '踢腳板顏色', ['baseboard'], 'color', { fallback: () => '#f4f2ee' });
     g('g:curtain', '窗簾', ['decor', 'curtains'], 'curtain');
     g('g:rug', '地毯花色', ['decor', 'rug'], 'rug');
-    g('g:pendant', '餐桌吊燈', ['decor', 'pendant'], 'enum', { options: [['globe', '球形'], ['cone', '錐形'], ['linear', '長條'], ['rattan', '藤編'], ['none', '不要吊燈']], fallback: () => 'none' });
+    g('g:pendant', '餐桌吊燈', ['decor', 'pendant'], 'enum', { options: [['globe', '球形'], ['saucer', '飛碟'], ['cone', '錐形'], ['linear', '長條'], ['rattan', '藤編'], ['none', '不要吊燈']], fallback: () => 'none' });
     for (const r of rooms()) {
       const grp = `房間・${r.name}`;
       const tW = () => effStyle().rooms?.[r.type]?.wall ?? effStyle().wall;
@@ -201,6 +201,7 @@ export function createEditor(api) {
     const hiddenCats = new Set(state.design.hiddenCategories || []);
     const curtainsOn = effStyle().decor?.curtains?.enabled !== false && !!effStyle().decor?.curtains;
     const pendantOn = (effStyle().decor?.pendant || 'none') !== 'none';
+    const accOn = effStyle().decor?.accessories !== false;
     const byRoom = new Map();
     for (const it of list) { const r = roomOfItem(it); if (!byRoom.has(r)) byRoom.set(r, []); byRoom.get(r).push(it); }
     const sel = state.selection?.kind === 'furniture' ? list.find((i) => i.id === state.selection.id) : null;
@@ -216,6 +217,7 @@ export function createEditor(api) {
         ${Object.entries(CATEGORIES).map(([k, c]) => { const n = list.filter((i) => categoryOf(i.type) === k).length; return n ? `<button class="chip ${hiddenCats.has(k) ? '' : 'on'}" data-cat="${k}">${c.label} ${n}</button>` : ''; }).join('')}
         <button class="chip ${curtainsOn ? 'on' : ''}" data-gen="curtains">窗簾</button>
         <button class="chip ${pendantOn ? 'on' : ''}" data-gen="pendant">吊燈</button>
+        <button class="chip ${accOn ? 'on' : ''}" data-gen="accessories" title="抱枕、毯子、書、托盤、花瓶、檯燈、掛畫（依樣板配色自動擺放）">擺飾</button>
       </div>
       ${addOpen ? addFormHTML() : ''}
       ${sel ? itemEditorHTML(sel) : '<p class="hint">在清單或 3D 畫面點選家具，即可換模型、改顏色、調整位置與尺寸。</p>'}
@@ -254,6 +256,10 @@ export function createEditor(api) {
       if (pendantOn) setPath(d.style, ['decor', 'pendant'], 'none');
       else { deletePath(d.style, ['decor', 'pendant']); if ((tplStyle().decor?.pendant || 'none') === 'none') setPath(d.style, ['decor', 'pendant'], 'globe'); }
     });
+    root.querySelector('[data-gen=accessories]').onclick = () => api.commit((d) => {
+      if (accOn) setPath(d.style, ['decor', 'accessories'], false);
+      else { deletePath(d.style, ['decor', 'accessories']); if (tplStyle().decor?.accessories === false) setPath(d.style, ['decor', 'accessories'], true); }
+    });
     root.querySelectorAll('[data-vis]').forEach((cb) => (cb.onclick = (e) => { e.stopPropagation(); setHidden(cb.dataset.vis, !cb.checked); }));
     root.querySelectorAll('.frow[data-id]').forEach((row) => (row.onclick = (e) => { if (e.target.matches('input')) return; api.select({ kind: 'furniture', id: row.dataset.id }); api.focusOn({ kind: 'furniture', id: row.dataset.id }); }));
     root.querySelectorAll('[data-room-on],[data-room-off]').forEach((b) => (b.onclick = () => {
@@ -282,9 +288,17 @@ export function createEditor(api) {
   function setHidden(id, hide) { const it = items().find((i) => i.id === id); if (it) api.commit((d) => setItemHidden(d, it, hide), { rebuild: false }); }
 
   // ----- item editor -----
-  function modelOptions(type, current, { allowDefault = true } = {}) {
+  /** the model a piece gets when nothing is chosen: template models.<type>, else the built-in default for this piece */
+  const defaultModelId = (type, it = {}) => {
+    const variant = { ...(effStyle().furniture || {}), ...(it.variant || {}) };
+    if (type === 'chair' && it.type && it.type !== 'chair') variant.chair = it.chairStyle || (it.type === 'desk' ? 'upholstered' : variant.chair);
+    const sm = effStyle().models?.[type];
+    if (sm !== undefined && sm !== null) return sm === false ? null : (pickSpec(sm, type === it.type ? it : {}, variant) || pickDefault(type, type === it.type ? it : {}, variant))?.id || null;
+    return pickDefault(type, type === it.type ? it : {}, variant)?.id || null;
+  };
+  function modelOptions(type, current, { allowDefault = true, it } = {}) {
     const list = modelsForType(type);
-    const styleDefault = effStyle().models?.[type] ?? MODEL_DEFAULTS[type]?.id;
+    const styleDefault = defaultModelId(type, it);
     const opt = (v, l, s) => `<option value="${esc(v)}" ${s ? 'selected' : ''}>${esc(l)}</option>`;
     const src = (m) => ({ polyhaven: 'Poly Haven', upload: '上傳', tripo: 'Tripo AI', magnific: 'AI 生成', khronos: 'Khronos 範例', sketchfab: 'Sketchfab', local: '本機' }[m.source] || m.source);
     return [
@@ -308,11 +322,11 @@ export function createEditor(api) {
         <button data-act="hide">${it.hidden ? '顯示' : '隱藏'}</button><button data-act="dup">複製</button><button data-act="del">刪除</button>
         ${Object.keys(o).filter((k) => k !== 'hidden').length ? '<button data-act="reset">重設此件</button>' : ''}
       </div>
-      ${field('模型', `<select data-f="model">${modelOptions(it.type, o.model)}</select>`)}
+      ${field('模型', `<select data-f="model">${modelOptions(it.type, o.model, { it })}</select>`)}
       <button class="wide lib-toggle" data-lib-for="item">🔍 從免費模型庫挑選（Amazon 真實商品）</button><div class="lib" hidden></div>
       ${usesModel && modelEntry(obj.userData.modelId)?.note ? `<div class="sub">${esc(modelEntry(obj.userData.modelId).note)}</div>` : ''}
       ${usesModel ? `<div class="model-colors" data-mc="model" data-model="${esc(obj.userData.modelId)}"><div class="sub">載入模型材質…</div></div>` + field('模型朝向', `<button data-act="mrot-">⟲ 90°</button> <button data-act="mrot+">⟳ 90°</button>`) : ''}
-      ${it.type === 'dining_table' ? field('椅子模型', `<select data-f="slotModel">${modelOptions('chair', o.slotModel)}</select>`) : ''}
+      ${it.type === 'dining_table' ? field('椅子模型', `<select data-f="slotModel">${modelOptions('chair', o.slotModel, { it })}</select>`) : ''}
       ${it.type === 'dining_table' && chairModelId(it) ? `<div class="model-colors" data-mc="slot" data-model="${esc(chairModelId(it))}"><div class="sub">載入椅子材質…</div></div>` : ''}
       ${!usesModel && roles.length ? `<div class="lbl">各部位顏色</div>${roles.map((r) => field(ROLE_LABELS[r] || r, `${colorInput(r, toHex(it.colors?.[r]?.color ?? it.colors?.[r] ?? state.built?.materials?.[r]?.userData?.baseColor), 'data-role')}${it.colors?.[r] ? ` <button class="link" data-unrole="${r}">樣板色</button>` : ''}`)).join('')}` : ''}
       ${!usesModel && vars.length ? `<div class="lbl">造型</div>${vars.map((k) => field(VARIANTS[k].label, `<select data-var="${k}"><option value="">樣板預設</option>${VARIANTS[k].options.map(([v, l]) => `<option value="${v}" ${it.variant?.[k] === v && o.variant?.[k] ? 'selected' : ''}>${l}</option>`).join('')}</select>`)).join('')}` : ''}
@@ -332,7 +346,7 @@ export function createEditor(api) {
   }
 
   function chairModelId(it) {
-    const v = it.slotModel !== undefined ? it.slotModel : (effStyle().models?.chair ?? MODEL_DEFAULTS.chair?.id);
+    const v = it.slotModel !== undefined ? it.slotModel : defaultModelId('chair', it);
     return typeof v === 'string' ? v : null;
   }
 

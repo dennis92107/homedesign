@@ -25,6 +25,22 @@
     {
       "name": "侘寂・域（東喬參考）",
       "file": "styles/wabi-yu.json"
+    },
+    {
+      "name": "現代灰・隱（東喬參考）",
+      "file": "styles/modern-grey-yin.json"
+    },
+    {
+      "name": "現代棕・序（東喬參考）",
+      "file": "styles/modern-brown-xu.json"
+    },
+    {
+      "name": "暗調工業・工（東喬參考）",
+      "file": "styles/dark-industrial-gong.json"
+    },
+    {
+      "name": "墨色現代・墨（東喬參考）",
+      "file": "styles/ink-modern-mo.json"
     }
   ]
 }

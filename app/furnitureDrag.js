@@ -168,7 +168,7 @@ export function createFurnitureDrag(api) {
     const set = (o) => { o.position.x = pose.x / 100; o.position.z = pose.y / 100; o.rotation.y = -pose.rot * D2R; };
     set(obj);
     b.groups.furniture.children.forEach((o) => { if (o.userData.kind === 'pendant' && o.userData.id === id) set(o); });
-    const c = b.colliders.find((k) => k.obj === obj); if (c) { c.x = pose.x / 100; c.z = pose.y / 100; c.rot = -pose.rot * D2R; }
+    for (const c of b.colliders) if (c.obj === obj) { c.x = pose.x / 100; c.z = pose.y / 100; c.rot = -pose.rot * D2R; }
     api.onMoved();
   }
   function commitPose(it, pose) {

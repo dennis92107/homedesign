@@ -117,7 +117,7 @@ function loadGLTF(id, res = '1k') {
   const key = id + res;
   if (!modelCache.has(key) && localModels.has(id)) {
     const entry = localModels.get(id);
-    modelCache.set(key, track(new GLTFLoader().loadAsync(entry.file).then(prepGLTF)));
+    modelCache.set(key, track(new GLTFLoader().loadAsync(entry.file).then(prepGLTF).then(simplifyModel)));
   }
   if (!modelCache.has(key)) {
     modelCache.set(key, track((async () => {
@@ -130,7 +130,7 @@ function loadGLTF(id, res = '1k') {
         return url;
       });
       const gltf = await new GLTFLoader(manager).loadAsync(g.url);
-      return prepGLTF(gltf);
+      return simplifyModel(prepGLTF(gltf));
     })()));
   }
   return modelCache.get(key);
@@ -144,6 +144,54 @@ function prepGLTF(gltf) {
   lights.forEach((l) => l.parent?.remove(l)); // models may embed KHR_lights_punctual; the room has its own lighting
   const variants = (gltf.userData?.gltfExtensions?.KHR_materials_variants?.variants || []).map((v) => v.name);
   return { root, parser: gltf.parser, variants, materials: listMaterials(root) };
+}
+
+// ---------- triangle budget ----------
+// Some product scans are far heavier than a room needs (an ABO desk set: 267k triangles, a dining set: 250k — together
+// 60 % of the whole flat). Every pass (shadow, AO, reflections, main) draws them again, so heavy models are reduced
+// on load with meshoptimizer's simplifier (same algorithm as gltfpack / glTF-Transform simplify,
+// https://gltf-transform.dev/modules/functions/functions/simplify). It only rewrites the index buffer, so UVs,
+// normals and materials stay. Quality was checked on close-ups (round table rim, dining chairs): normals are weighted
+// in and every model keeps ≥25 % of its triangles.
+export const TRI_BUDGET = { model: 15000, keep: 0.25, normalWeight: 0.5, minTris: 400 };
+try { const ov = JSON.parse(localStorage.getItem('hd:triBudget') || 'null'); if (ov) Object.assign(TRI_BUDGET, ov); } catch (e) { /* debug override only */ }
+let simplifierP = null;
+const simplifier = () => (simplifierP ||= import('meshoptimizer/meshopt_simplifier.module.js')
+  .then(async (m) => { await m.MeshoptSimplifier.ready; m.MeshoptSimplifier.useExperimentalFeatures = true; return m.MeshoptSimplifier; }).catch((e) => { console.warn('simplifier unavailable', e); return null; }));
+const triCount = (g) => (g.index ? g.index.count : g.attributes.position.count) / 3;
+async function simplifyModel(model) {
+  const geos = new Set(); model.root.traverse((o) => { if (o.isMesh && o.geometry?.index && o.geometry.attributes.position) geos.add(o.geometry); });
+  let before = 0; geos.forEach((g) => { before += triCount(g); });
+  model.tris = { before, after: before };
+  if (before <= TRI_BUDGET.model) return model;
+  const S = await simplifier(); if (!S) return model;
+  // keep at least `keep` of the original: tested on the ABO round table — 20 % already made the rim wavy
+  const ratio = Math.max(TRI_BUDGET.keep, TRI_BUDGET.model / before); let after = 0;
+  for (const g of geos) {
+    const P = g.attributes.position, n = P.count, pos = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { pos[i * 3] = P.getX(i); pos[i * 3 + 1] = P.getY(i); pos[i * 3 + 2] = P.getZ(i); }
+    // normals count as attributes: position-only simplification flattened the shading of rounded edges (table rims)
+    const N = g.attributes.normal; let nor = null;
+    if (N) { nor = new Float32Array(n * 3); for (let i = 0; i < n; i++) { nor[i * 3] = N.getX(i); nor[i * 3 + 1] = N.getY(i); nor[i * 3 + 2] = N.getZ(i); } }
+    const w = TRI_BUDGET.normalWeight;
+    const src = g.index.array, groups = g.groups.length ? g.groups : [{ start: 0, count: g.index.count, materialIndex: 0 }];
+    const parts = []; const newGroups = [];
+    for (const gr of groups) {
+      const idx = Uint32Array.from(src.subarray(gr.start, gr.start + gr.count));
+      const want = Math.max(TRI_BUDGET.minTris * 3, Math.floor((idx.length / 3) * ratio) * 3);
+      let out = idx;
+      if (want < idx.length) { try { [out] = nor ? S.simplifyWithAttributes(idx, pos, 3, nor, 3, [w, w, w], null, want, 1, ['LockBorder']) : S.simplify(idx, pos, 3, want, 1, ['LockBorder']); } catch (e) { out = idx; } } // LockBorder: open edges (table rims, cushion seams) keep their outline
+      if (!out.length) out = idx; // never drop a part completely
+      newGroups.push({ start: parts.reduce((s, p) => s + p.length, 0), count: out.length, materialIndex: gr.materialIndex ?? 0 }); parts.push(out);
+    }
+    const total = parts.reduce((s, p) => s + p.length, 0), merged = new Uint32Array(total);
+    let o = 0; for (const p of parts) { merged.set(p, o); o += p.length; }
+    g.setIndex(new THREE.BufferAttribute(merged, 1));
+    if (g.groups.length) { g.clearGroups(); newGroups.forEach((gr) => g.addGroup(gr.start, gr.count, gr.materialIndex)); }
+    after += total / 3;
+  }
+  model.tris.after = after;
+  return model;
 }
 
 const matKey = (m, i) => (m.name && m.name.trim()) || `材質 ${i + 1}`;
@@ -318,23 +366,59 @@ export async function modelInstance(id, fit) {
       o.material = Array.isArray(o.material) ? out : out[0];
     });
   }
+  // holder (world-aligned, carries the scale) → rot (model orientation fix) → model, so a non-uniform
+  // scale always stretches along the footprint's width/depth, never along a rotated model axis
   const wrap = new THREE.Group();
-  const holder = new THREE.Group(); holder.add(inst); wrap.add(holder);
-  if (fit.rotate) holder.rotation.y = (fit.rotate * Math.PI) / 180;
+  const holder = new THREE.Group(); const rot = new THREE.Group();
+  rot.add(fit.mirror ? mirrored(inst) : inst); holder.add(rot); wrap.add(holder);
+  if (fit.rotate) rot.rotation.y = (fit.rotate * Math.PI) / 180;
   const box = new THREE.Box3().setFromObject(holder);
   const size = box.getSize(new THREE.Vector3());
-  let s;
-  if (fit.by === 'height' && fit.h) s = fit.h / size.y;
-  else {
+  let s, sx, sz;
+  if (fit.by === 'height' && fit.h) { s = sx = sz = fit.h / size.y; }
+  else if (fit.byWidth) { // e.g. an L-shaped sofa: the plan's w×d is the main seat, the chaise sticks out in front
+    s = sx = sz = fit.w / size.x;
+    if (fit.h) s = sx = sz = Math.min(s, (fit.h * 1.15) / size.y);
+  } else {
     s = Math.min(fit.w / size.x, fit.d / size.z);
     if (fit.h) s = Math.min(s, (fit.h * 1.15) / size.y);
+    // let width / depth follow the plan a little more closely than one uniform scale allows: up to `stretch`
+    // (default 12 %) more along one axis — product models are made at catalogue proportions, a bigger stretch
+    // visibly distorts them (Sweet Home 3D's "keep proportions" off), so beyond that the piece stays smaller
+    const k = fit.stretch ?? 1.12;
+    sx = Math.min(fit.w / size.x, s * k); sz = Math.min(fit.d / size.z, s * k);
   }
-  holder.scale.setScalar(s);
+  holder.scale.set(sx, s, sz);
   const box2 = new THREE.Box3().setFromObject(holder);
   const c = box2.getCenter(new THREE.Vector3());
-  holder.position.set(-c.x, -box2.min.y, -c.z);
+  // align: 'back' = the model's back sits on the footprint's back edge (−d/2) instead of being centred
+  holder.position.set(-c.x, -box2.min.y, fit.align === 'back' && fit.d ? -fit.d / 2 - box2.min.z : -c.z);
   wrap.userData.isModel = id;
+  wrap.userData.fitBox = new THREE.Box3().setFromObject(holder); // footprint actually used, in the piece's frame
   return wrap;
+}
+
+/** left-right mirror image of a model with real geometry (X flipped, triangle winding reversed). A negative scale
+ *  would render fine in WebGL but the path tracer would see every face from the back (black sofa). */
+const mirrorCache = new WeakMap();
+function mirrored(inst) {
+  const out = new THREE.Group();
+  inst.updateMatrixWorld(true);
+  const flip = new THREE.Matrix4().makeScale(-1, 1, 1);
+  inst.traverse((o) => {
+    if (!o.isMesh) return;
+    let g = mirrorCache.get(o.geometry)?.get(o.matrixWorld.elements.join());
+    if (!g) {
+      g = o.geometry.clone().applyMatrix4(o.matrixWorld).applyMatrix4(flip);
+      if (g.index) { const ix = g.index.array; for (let i = 0; i < ix.length; i += 3) { const t = ix[i + 1]; ix[i + 1] = ix[i + 2]; ix[i + 2] = t; } g.index.needsUpdate = true; }
+      else for (const a of Object.values(g.attributes)) { const n = a.itemSize, arr = a.array; for (let i = 0; i < arr.length; i += 9 * n / 3) for (let k = 0; k < n; k++) { const t = arr[i + n + k]; arr[i + n + k] = arr[i + 2 * n + k]; arr[i + 2 * n + k] = t; } a.needsUpdate = true; }
+      if (!mirrorCache.has(o.geometry)) mirrorCache.set(o.geometry, new Map());
+      mirrorCache.get(o.geometry).set(o.matrixWorld.elements.join(), g);
+    }
+    const m = new THREE.Mesh(g, o.material); m.castShadow = o.castShadow; m.receiveShadow = o.receiveShadow; m.userData = { ...o.userData };
+    out.add(m);
+  });
+  return out;
 }
 
 // ---------- HDRI ----------
@@ -375,11 +459,51 @@ export const ROLE_PBR = {
   wood: { id: 'oak_veneer_01', mode: 'retint' },
   woodDark: { id: 'black_walnut_veneer_01', mode: 'retint' },
 };
-// Furniture type -> default Poly Haven model. Most Poly Haven furniture is classic/vintage, so styles opt in
-// per type via style.models (see MODEL_LIBRARY); only style-neutral pieces get a default here.
+// Furniture type -> default real model (「真實版」2026-11-22). Pieces without their own `model` and whose
+// style has no `models.<type>` use these, so every template gets real furniture. A list = first match wins;
+// `if` keys: chaise (bool), shape ('round'|'rect'), notRoom ([room types]), or a style furniture switch
+// (sofa: boxy|rounded, chair: spindle|solid|upholstered, bed: legs|platform|upholstered).
+// Colours follow the template: each catalogue entry's `roles` maps a material / colour region to a role
+// (upholstery = fabric or leather by the template, wood, lampshade …). ABO models: CC BY-NC 4.0.
+const ABO = (i) => 'local:abo_' + i;
 export const MODEL_DEFAULTS = {
   plant: { id: 'potted_plant_02', by: 'height' },
+  sofa: [
+    { id: ABO('B07BW8MJR2'), if: { chaise: true }, byWidth: true, align: 'back' }, // Edgewest L 型（模型的貴妃在左，chaise: right 會鏡像）
+    { id: ABO('B07G2XB4ZL'), if: { sofa: 'boxy' } },                                // 方正低背
+    { id: ABO('B07K94M78Y') },                                                      // 圓潤
+  ],
+  armchair: { id: ABO('B07DBH52YB') },
+  chair: [{ id: ABO('B08G1YWN8L'), if: { chair: 'upholstered' } }, { id: ABO('B0856G6QWP') }],
+  dining_table: [{ id: ABO('B075YV7SKC'), if: { shape: 'round' } }, { id: ABO('B075YQXRJM') }],
+  coffee_table: [{ id: ABO('B07GDSF3MR'), if: { shape: 'round' } }, { id: ABO('B07GF51SLB') }],
+  side_table: { id: ABO('B07GDZ8HN6') },
+  tv_cabinet: { id: ABO('B07BVHKPFS') },
+  sideboard: { id: ABO('B07TR659G8'), if: { notRoom: ['storage'] } }, // built-in closet cabinets stay procedural
+  bed: [{ id: ABO('B07B4VXZZX'), if: { bed: 'upholstered' } }, { id: ABO('B07K7NXVXR') }],
+  nightstand: { id: ABO('B07VB7Q6W7') },
+  desk: { id: ABO('B0876PDMJR') },
+  floor_lamp: { id: ABO('B0742GG15D'), by: 'height' },
 };
+/** the default model spec for one piece: type + item (+ its room type) + effective style furniture switches */
+export function pickDefault(type, it = {}, variant = {}, roomType) {
+  return pickSpec(MODEL_DEFAULTS[type], it, variant, roomType);
+}
+/** first matching spec of a list like MODEL_DEFAULTS[type] (also used for a template's `models.<type>` list) */
+export function pickSpec(d, it = {}, variant = {}, roomType) {
+  if (!d) return null;
+  if (typeof d === 'string') return { id: d };
+  const ok = (cond = {}) => Object.entries(cond).every(([k, v]) => {
+    if (k === 'chaise') return !!it.chaise === v;
+    if (k === 'shape') return (it.shape || 'rect') === v;
+    if (k === 'notRoom') return !v.includes(roomType);
+    return Array.isArray(v) ? v.includes(variant[k]) : variant[k] === v;
+  });
+  const spec = (Array.isArray(d) ? d : [d]).map((s) => (typeof s === 'string' ? { id: s } : s)).find((s) => ok(s.if));
+  if (!spec) return null;
+  const { if: _, ...rest } = spec;
+  return rest;
+}
 // fit hints per model (by: 'height' scales to item height instead of footprint)
 export const MODEL_FIT = {
   potted_plant_01: { by: 'height' }, potted_plant_02: { by: 'height' }, potted_plant_04: { by: 'height' },

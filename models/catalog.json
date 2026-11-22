@@ -60,6 +60,762 @@
       ],
       "color": "Walnut",
       "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/32/32cd9937.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "B07GDSF3MR_MAT_MR": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07K94M78Y",
+      "name": "圓潤布沙發（Blankan）",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/abo_B07K94M78Y.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        2.257,
+        0.78,
+        0.88
+      ],
+      "color": "Light Grey",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/98/98be3bd9.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B07K94M78Y_TRB_MDL_MR\"#0": "upholstery",
+        "\"B07K94M78Y_TRB_MDL_MR\"#2": "wood",
+        "\"B07K94M78Y_TRB_MDL_MR\"#3": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07G2XB4ZL",
+      "name": "方正低背布沙發（Just）",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/abo_B07G2XB4ZL.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        2.013,
+        0.83,
+        0.98
+      ],
+      "color": "Emotion 002 Ash",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/2d/2d4e6c5b.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "B07G2XB4ZL_MAT_MR#0": "upholstery"
+      }
+    },
+    {
+      "id": "local:abo_B07BW8MJR2",
+      "name": "L 型貴妃布沙發（Edgewest）",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/abo_B07BW8MJR2.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        2.923,
+        0.816,
+        1.469
+      ],
+      "color": "Grey Linen",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/8d/8d83d63f.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B07BW8MJR2_TRB_MDL_MR\"#0": "upholstery"
+      },
+      "chaise": "left"
+    },
+    {
+      "id": "local:abo_B07DBH52YB",
+      "name": "斜扶手單椅（Eddison）",
+      "type": "armchair",
+      "types": [
+        "armchair",
+        "chair"
+      ],
+      "file": "assets/models/abo_B07DBH52YB.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.689,
+        0.886,
+        0.806
+      ],
+      "color": "Light Grey",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/44/44985021.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"AAFPEOFBKDCAAAAAFMBAAAAAAAAAPHCEHCLM\"#0": "upholstery"
+      }
+    },
+    {
+      "id": "local:abo_B0856G6QWP",
+      "name": "曲木餐椅（Bistro）",
+      "type": "chair",
+      "types": [
+        "chair"
+      ],
+      "file": "assets/models/abo_B0856G6QWP.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.506,
+        0.79,
+        0.491
+      ],
+      "color": "Beige18",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/6d/6d4ef398.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B0856G6QWP_TRB_MDL_MR\"#0": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B08G1YWN8L",
+      "name": "布面餐椅（Wendy）",
+      "type": "chair",
+      "types": [
+        "chair"
+      ],
+      "file": "assets/models/abo_B08G1YWN8L.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.57,
+        0.83,
+        0.59
+      ],
+      "color": "Hellgrau",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/84/84759d2f.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B08G1YWN8L_TRB_MDL_MR\"#0": "upholstery",
+        "\"B08G1YWN8L_TRB_MDL_MR\"#1": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B075YQXRJM",
+      "name": "胡桃木長餐桌（中世紀）",
+      "type": "dining_table",
+      "types": [
+        "dining_table"
+      ],
+      "file": "assets/models/abo_B075YQXRJM.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.349,
+        0.724,
+        0.801
+      ],
+      "color": "Brown",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/37/379f95e3.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"AOFIJONPLOBAAAAAFMBAAAAAAAAAICBECCPO\"": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B075YV7SKC",
+      "name": "胡桃木圓餐桌（中世紀）",
+      "type": "dining_table",
+      "types": [
+        "dining_table"
+      ],
+      "file": "assets/models/abo_B075YV7SKC.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.053,
+        0.786,
+        1.051
+      ],
+      "color": "Chestnut",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/30/304f4661.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B075YV7SKC_TRB_MDL_MR\"": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07GF51SLB",
+      "name": "低矮長茶几（Rivet）",
+      "type": "coffee_table",
+      "types": [
+        "coffee_table"
+      ],
+      "file": "assets/models/abo_B07GF51SLB.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.197,
+        0.347,
+        0.651
+      ],
+      "color": "Walnut/Black Metal Frame",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/7a/7a642379.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"ALHAPBNBHEBAAAAAFMBAAAAAAAAAPJNDGAAH\"#0": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07GDZ8HN6",
+      "name": "黑框木抽屜邊几",
+      "type": "side_table",
+      "types": [
+        "side_table"
+      ],
+      "file": "assets/models/abo_B07GDZ8HN6.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.43,
+        0.515,
+        0.43
+      ],
+      "color": "Walnut Veneer",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/af/af8a4df6.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "B07GDZ8HN6_MAT_MR#1": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07BVHKPFS",
+      "name": "胡桃木電視櫃（Bowlyn）",
+      "type": "tv_cabinet",
+      "types": [
+        "tv_cabinet",
+        "decor"
+      ],
+      "file": "assets/models/abo_B07BVHKPFS.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.626,
+        0.61,
+        0.481
+      ],
+      "color": "",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/2f/2fc198b8.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"AMJFIEMNGFCAAAAAFMBAAAAAAAAANKLDIPHN\"": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07TR659G8",
+      "name": "木紋鐵腳矮櫃（Ems）",
+      "type": "sideboard",
+      "types": [
+        "sideboard"
+      ],
+      "file": "assets/models/abo_B07TR659G8.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.8,
+        0.762,
+        0.395
+      ],
+      "color": "Kerneiken",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/23/23ae63ef.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "B07TR659G8_MAT_MR#0": "wood",
+        "B07TR659G8_MAT_MR#2": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07B4VXZZX",
+      "name": "布面床頭木床",
+      "type": "bed",
+      "types": [
+        "bed"
+      ],
+      "file": "assets/models/abo_B07B4VXZZX.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.587,
+        1.275,
+        2.196
+      ],
+      "color": "Spiced Walnut",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/e3/e32c8e43.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"AMEAILJEIDCAAAAAFMBAAAAAAAAAADJACHNI\"#0": "wood"
+      },
+      "pillows": true
+    },
+    {
+      "id": "local:abo_B07K7NXVXR",
+      "name": "實木平台床（Hayes）",
+      "type": "bed",
+      "types": [
+        "bed"
+      ],
+      "file": "assets/models/abo_B07K7NXVXR.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.472,
+        0.94,
+        1.992
+      ],
+      "color": "Wild Oak",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/8b/8b546e2b.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B07K7NXVXR_TRB_MDL_MR1\"#0": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07VB7Q6W7",
+      "name": "木抽屜鐵框床頭櫃",
+      "type": "nightstand",
+      "types": [
+        "nightstand",
+        "decor"
+      ],
+      "file": "assets/models/abo_B07VB7Q6W7.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.6,
+        0.5,
+        0.42
+      ],
+      "color": "Ecru",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/77/772a7ada.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "ASSET_MAT_MR#0": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B0876PDMJR",
+      "name": "木面鐵腳書桌",
+      "type": "desk",
+      "types": [
+        "desk"
+      ],
+      "file": "assets/models/abo_B0876PDMJR.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.016,
+        0.762,
+        0.508
+      ],
+      "color": "Black, Dark Boad",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/8c/8c13eefc.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B0876PDMJR_TRB_MDL_MR\"#1": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B0742GG15D",
+      "name": "三腳布罩立燈",
+      "type": "floor_lamp",
+      "types": [
+        "floor_lamp"
+      ],
+      "file": "assets/models/abo_B0742GG15D.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.449,
+        1.545,
+        0.46
+      ],
+      "color": "Antique Brass",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/16/162b12b9.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "by": "height",
+      "roles": {
+        "\"ABPIBNNOMFCAAAAAFMBAAAAAAAAAAFLLKFKN\"#0": "lampshade"
+      }
+    },
+    {
+      "id": "local:abo_B07M6PHS6W",
+      "name": "陶瓷檯燈",
+      "type": "decor",
+      "types": [
+        "decor"
+      ],
+      "file": "assets/models/abo_B07M6PHS6W.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.203,
+        0.389,
+        0.203
+      ],
+      "color": "Cannoli Cream",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/0a/0a1755e9.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "by": "height"
+    },
+    {
+      "id": "local:abo_B07MBFDS2R",
+      "name": "方抱枕",
+      "type": "decor",
+      "types": [
+        "decor"
+      ],
+      "file": "assets/models/abo_B07MBFDS2R.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.523,
+        0.51,
+        0.166
+      ],
+      "color": "Navy",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/0d/0d7fdbaa.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B07MBFF1K5",
+      "name": "腰枕",
+      "type": "decor",
+      "types": [
+        "decor"
+      ],
+      "file": "assets/models/abo_B07MBFF1K5.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.617,
+        0.295,
+        0.151
+      ],
+      "color": "Navy",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/e0/e05190ef.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B07QD6ZV9Q",
+      "name": "高陶瓶",
+      "type": "decor",
+      "types": [
+        "decor"
+      ],
+      "file": "assets/models/abo_B07QD6ZV9Q.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.136,
+        0.289,
+        0.136
+      ],
+      "color": "",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/51/51a61eeb.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B07QHL8W81",
+      "name": "卵石花瓶對",
+      "type": "decor",
+      "types": [
+        "decor"
+      ],
+      "file": "assets/models/abo_B07QHL8W81.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.187,
+        0.131,
+        0.089
+      ],
+      "color": "",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/de/de2fcb47.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B07B8NZQ68",
+      "name": "粗陶花瓶",
+      "type": "decor",
+      "types": [
+        "decor"
+      ],
+      "file": "assets/models/abo_B07B8NZQ68.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.158,
+        0.228,
+        0.158
+      ],
+      "color": "Cream and Clay",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/f2/f23f7e6e.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B078JMXRGC",
+      "name": "石面木托盤",
+      "type": "decor",
+      "types": [
+        "decor"
+      ],
+      "file": "assets/models/abo_B078JMXRGC.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.387,
+        0.062,
+        0.231
+      ],
+      "color": "",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/c2/c2277482.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B07B4MG9CQ",
+      "name": "亞麻貴妃沙發（Andover）",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/abo_B07B4MG9CQ.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        3.186,
+        0.861,
+        1.625
+      ],
+      "color": "Linen",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/94/9470b8bd.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B07B4MG9CQ_TRB_MDL_MR\"": "upholstery"
+      },
+      "chaise": "right"
+    },
+    {
+      "id": "local:abo_B084T7WS8J",
+      "name": "Y 字椅 原木（Wishbone）",
+      "type": "chair",
+      "types": [
+        "chair"
+      ],
+      "file": "assets/models/abo_B084T7WS8J.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.569,
+        0.73,
+        0.579
+      ],
+      "color": "Natural",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/30/30581333.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B084T7WS8J_TRB_MDL_MR\"#0": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07SG5G5JJ",
+      "name": "橢圓雙層實木茶几（Hayes）",
+      "type": "coffee_table",
+      "types": [
+        "coffee_table"
+      ],
+      "file": "assets/models/abo_B07SG5G5JJ.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        1.04,
+        0.49,
+        0.69
+      ],
+      "color": "Core Beech",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/2b/2b72a52b.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "ASSET_MAT_MR": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B07B4MG9H2",
+      "name": "亞麻罩套貴妃沙發（Andover Slipcover）",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/abo_B07B4MG9H2.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        3.177,
+        0.867,
+        1.622
+      ],
+      "color": "Linen",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/38/38fe8724.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B07B4MG9H2_TRB_MDL_MR\"#0": "upholstery"
+      },
+      "chaise": "right"
+    },
+    {
+      "id": "local:abo_B07B4FWQFJ",
+      "name": "亞麻罩套三人沙發（Andover Slipcover）",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/abo_B07B4FWQFJ.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        2.312,
+        0.853,
+        0.962
+      ],
+      "color": "Linen",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/27/275f9c26.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"B07B4FWQFJ_TRB_MDL_MR\"": "upholstery"
+      }
+    },
+    {
+      "id": "local:abo_B07BWJCPMV",
+      "name": "黑皮革貴妃沙發（Edgewest",
+      "type": "sofa",
+      "types": [
+        "sofa"
+      ],
+      "file": "assets/models/abo_B07BWJCPMV.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        2.993,
+        0.859,
+        1.471
+      ],
+      "color": "Charcoal",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/e5/e544d589.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "chaise": "right",
+      "roles": {
+        "\"B07BWJCPMV_TRB_MDL_MR\"": "upholstery"
+      }
+    },
+    {
+      "id": "local:abo_B07TPNG61L",
+      "name": "黑色圓矮茶几（Movian）",
+      "type": "coffee_table",
+      "types": [
+        "coffee_table"
+      ],
+      "file": "assets/models/abo_B07TPNG61L.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.9,
+        0.4,
+        0.9
+      ],
+      "color": "zwart",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/a4/a4efba8c.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B07374K536",
+      "name": "黑銅工作立燈（Caden）",
+      "type": "floor_lamp",
+      "types": [
+        "floor_lamp"
+      ],
+      "file": "assets/models/abo_B07374K536.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.235,
+        1.628,
+        0.618
+      ],
+      "color": "Black/Antique Brass",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/e2/e28b67a1.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "by": "height"
+    },
+    {
+      "id": "local:abo_B0853Q3Z93",
+      "name": "白面圓餐桌（Noah）",
+      "type": "dining_table",
+      "types": [
+        "dining_table"
+      ],
+      "file": "assets/models/abo_B0853Q3Z93.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.896,
+        0.762,
+        0.896
+      ],
+      "color": "White",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/cd/cdc35f17.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）",
+      "roles": {
+        "\"AKLKGLOCKDCAAAAAFMBAAAAAAAAAIEONGIBE\"#0": "wood",
+        "\"AKLKGLOCKDCAAAAAFMBAAAAAAAAAIEONGIBE\"#2": "wood"
+      }
+    },
+    {
+      "id": "local:abo_B08568YKWY",
+      "name": "黑皮餐椅（Decatur）",
+      "type": "chair",
+      "types": [
+        "chair"
+      ],
+      "file": "assets/models/abo_B08568YKWY.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.52,
+        0.93,
+        0.634
+      ],
+      "color": "Black",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/28/28e1374a.jpg",
+      "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
+    },
+    {
+      "id": "local:abo_B07HSG2V2Y",
+      "name": "茶玻璃圓茶几（Rivet）",
+      "type": "coffee_table",
+      "types": [
+        "coffee_table"
+      ],
+      "file": "assets/models/abo_B07HSG2V2Y.glb",
+      "source": "abo",
+      "rotate": 0,
+      "dims": [
+        0.938,
+        0.4,
+        0.938
+      ],
+      "color": "",
+      "thumb": "https://amazon-berkeley-objects.s3.amazonaws.com/images/small/f4/f415b00c.jpg",
       "note": "CC BY-NC 4.0 · Amazon Berkeley Objects（非商業使用）"
     }
   ]

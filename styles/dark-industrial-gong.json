@@ -1,0 +1,264 @@
+{
+  "name": "暗調工業・工（東喬參考）",
+  "description": "深色工業極簡：暖炭灰礦物牆、深灰天花、灰褐木地板、黑鐵開放層架與燈條、牆腳落地燈條、湖水藍絨布沙發、黃麻地毯、一字型吊燈、長木餐桌、臥室石紋床頭板＋洗牆光、浴室深灰大板磚、3000K。",
+  "palette": [
+    "#5d5955",
+    "#2f4a55",
+    "#5d5750",
+    "#1c1c1c",
+    "#c23b2b"
+  ],
+  "references": [
+    {
+      "image": "https://dongcio.com.tw/work/26?categoryId=7&fromPage=2",
+      "note": "東喬空間設計「工」，19 張：客廳 1、5–10、12、餐廳 2–4、更衣/百葉 13–14、浴室 15–17、臥室 18–19"
+    }
+  ],
+  "wall": {
+    "material": "limewash",
+    "color": "#5d5955",
+    "pbr": "grey_plaster",
+    "pbrMode": "retint",
+    "pbrScale": 1.5
+  },
+  "exteriorWall": "#bdb8b1",
+  "floor": {
+    "material": "wood",
+    "color": "#5d5750",
+    "plankWidth": 20,
+    "variation": 0.06
+  },
+  "ceiling": {
+    "color": "#57544f"
+  },
+  "rooms": {
+    "bedroom": {
+      "wall": {
+        "material": "paint",
+        "color": "#d6d3ce"
+      },
+      "ceiling": "#d6d3ce"
+    },
+    "bathroom": {
+      "floor": {
+        "material": "tile",
+        "color": "#4d4b48",
+        "tileSize": 60,
+        "grout": "#3e3c3a"
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#55524f",
+        "tileSize": 60,
+        "grout": "#42403d"
+      }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#6f6b66",
+        "tileSize": 30,
+        "grout": "#55524e"
+      }
+    }
+  },
+  "wallFaces": {
+    "次臥 A|9|P": {
+      "material": "limewash",
+      "color": "#6c6863",
+      "pbr": "brushed_concrete",
+      "pbrMode": "retint",
+      "pbrScale": 1.2,
+      "grooves": {
+        "spacing": 60,
+        "width": 0.6,
+        "color": "#3c3a37"
+      },
+      "wash": true
+    },
+    "次臥 B|21|P": {
+      "material": "limewash",
+      "color": "#6c6863",
+      "pbr": "brushed_concrete",
+      "pbrMode": "retint",
+      "pbrScale": 1.2,
+      "grooves": {
+        "spacing": 60,
+        "width": 0.6,
+        "color": "#3c3a37"
+      },
+      "wash": true
+    }
+  },
+  "doors": {
+    "color": "#2a2826"
+  },
+  "windows": {
+    "frameColor": "#1c1c1c",
+    "metalFrame": true
+  },
+  "baseboard": "#3a3734",
+  "baseboardHeight": 6,
+  "materials": {
+    "wood": "#4a3a2e",
+    "woodDark": "#2e2520",
+    "fabric": "#2f4a55",
+    "fabricAlt": "#9c8f7c",
+    "accent": "#22343c",
+    "metal": {
+      "color": "#1c1c1c",
+      "metalness": 0.6,
+      "roughness": 0.45
+    },
+    "cabinet": {
+      "color": "#55524e"
+    },
+    "countertop": {
+      "color": "#4d4b48",
+      "texture": "concrete"
+    },
+    "bedding": "#2b3540",
+    "pot": "#8a8379",
+    "curtain": "#ece8e2",
+    "lampshade": {
+      "color": "#f0e4d0",
+      "emissive": "#ffc488",
+      "emissiveIntensity": 1.0
+    }
+  },
+  "furniture": {
+    "sofa": "boxy",
+    "sofaMaterial": "fabric",
+    "legs": "plinth",
+    "chair": "solid",
+    "bed": "platform",
+    "tableTop": "wood",
+    "handles": "none"
+  },
+  "models": {
+    "sofa": [
+      {
+        "id": "local:abo_B07B4MG9CQ",
+        "if": {
+          "chaise": true
+        }
+      }
+    ],
+    "chair": "local:abo_B08568YKWY"
+  },
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#b3a58e",
+      "accent": "#9c8f7c",
+      "pattern": "solid"
+    },
+    "plants": false,
+    "curtains": {
+      "enabled": true,
+      "color": "#ece8e2",
+      "sheer": true,
+      "length": "floor"
+    },
+    "pendant": "linear",
+    "artPalette": [
+      "#c23b2b",
+      "#1c1c1c",
+      "#d9d2c5",
+      "#2f4a55"
+    ],
+    "bookColors": [
+      "#1c1c1c",
+      "#55524e",
+      "#d9d2c5",
+      "#2f4a55",
+      "#8a6e52"
+    ],
+    "accessories": true,
+    "sofaSide": "floorLamp",
+    "bedRunner": "throw",
+    "throwColor": "#34465a",
+    "pillows": "plain",
+    "softColors": [
+      "#22343c",
+      "#5d5955",
+      "#9c8f7c"
+    ]
+  },
+  "lighting": {
+    "toneMapping": "agx",
+    "exposure": 0.8,
+    "sunIntensity": 1.6,
+    "sunColor": "#ffeedd",
+    "ambient": 0.3,
+    "environment": 0.22,
+    "hdriIntensity": 0.45,
+    "hdriIntensityIndoor": 0.12,
+    "kelvin": 3000,
+    "room": {
+      "intensity": 2.6,
+      "fixture": false
+    },
+    "downlights": {
+      "enabled": true,
+      "spacing": 150,
+      "inset": 60,
+      "intensity": 1.1,
+      "angle": 26,
+      "trim": "#1a1a1a"
+    },
+    "skirting": {
+      "enabled": true,
+      "rooms": [
+        "living",
+        "dining",
+        "corridor"
+      ],
+      "height": 2,
+      "kelvin": 2800
+    },
+    "background": "#cfcac3",
+    "grade": {
+      "saturation": 0.92,
+      "contrast": 1.14,
+      "warmth": 0.08,
+      "tint": 0,
+      "blacks": -0.02,
+      "vignette": 0.3
+    },
+    "bloom": {
+      "strength": 0.4,
+      "radius": 0.5,
+      "threshold": 5
+    }
+  },
+  "added": [
+    {
+      "id": "style_gong_shelf",
+      "type": "display_shelf",
+      "x": 900,
+      "y": 396,
+      "w": 80,
+      "d": 35,
+      "h": 240,
+      "rotation": 90,
+      "frameColor": "#1c1c1c",
+      "backColor": "#3b3935",
+      "shelves": 6
+    },
+    {
+      "id": "style_gong_louvre",
+      "type": "slat_panel",
+      "dir": "h",
+      "x": 396,
+      "y": 440,
+      "w": 58,
+      "d": 4,
+      "h": 250,
+      "rotation": 0,
+      "color": "#1c1c1c",
+      "slat": 4,
+      "gap": 2.5
+    }
+  ]
+}

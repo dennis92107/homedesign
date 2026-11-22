@@ -1,0 +1,296 @@
+{
+  "name": "墨色現代・墨（東喬參考）",
+  "description": "黑白灰墨色系：黑底白紋大理石電視牆（洗牆燈）＋兩側黑色溝槽板、灰木皮直板沙發牆、灰色大板石材地坪、白天花小降板、黑皮沙發、灰長毛地毯、白色廚櫃配黑中島、臥室深灰溝槽床頭牆與深灰窗簾、浴室深灰白紋大理石、3500K 中性光。",
+  "palette": [
+    "#262626",
+    "#7d766f",
+    "#6f6d6a",
+    "#f0efed",
+    "#2b3a5c"
+  ],
+  "references": [
+    {
+      "image": "https://dongcio.com.tw/work/29?categoryId=7&fromPage=3",
+      "note": "東喬空間設計「墨」，11 張：客廳 1–5、廚房 6–7、臥室 8–9、浴室 10、書房 11"
+    }
+  ],
+  "wall": {
+    "material": "paint",
+    "color": "#d9d7d3"
+  },
+  "exteriorWall": "#c9c6c1",
+  "floor": {
+    "material": "marble",
+    "color": "#6f6d6a",
+    "tileSize": 80,
+    "grout": "#5d5b58",
+    "roughness": 0.3
+  },
+  "ceiling": {
+    "color": "#f0efed"
+  },
+  "rooms": {
+    "bedroom": {
+      "wall": {
+        "material": "paint",
+        "color": "#4a4947"
+      },
+      "floor": {
+        "material": "wood",
+        "color": "#5a554f",
+        "plankWidth": 18,
+        "variation": 0.06
+      }
+    },
+    "storage": {
+      "wall": {
+        "material": "paint",
+        "color": "#4a4947"
+      },
+      "floor": {
+        "material": "wood",
+        "color": "#5a554f",
+        "plankWidth": 18,
+        "variation": 0.06
+      }
+    },
+    "bathroom": {
+      "floor": {
+        "material": "marble",
+        "color": "#4a4846",
+        "tileSize": 80,
+        "pbr": false,
+        "veins": "bold",
+        "veinColor": "#cfccc7"
+      },
+      "wall": {
+        "material": "marble",
+        "color": "#4a4846",
+        "tileSize": 120,
+        "pbr": false,
+        "veins": "bold",
+        "veinColor": "#cfccc7"
+      }
+    },
+    "kitchen": {
+      "wall": {
+        "material": "paint",
+        "color": "#ecebe8"
+      }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#7a7875",
+        "tileSize": 30,
+        "grout": "#5f5d5a"
+      }
+    }
+  },
+  "wallFaces": {
+    "客廳|1|P": {
+      "material": "marble",
+      "color": "#262626",
+      "tileSize": 160,
+      "pbr": false,
+      "veins": "bold",
+      "veinColor": "#e8e6e2",
+      "wash": true
+    },
+    "客廳|19|N": {
+      "material": "woodPanel",
+      "color": "#7d766f",
+      "slat": 45,
+      "gap": 0.4
+    },
+    "次臥 A|9|P": {
+      "material": "woodPanel",
+      "color": "#353434",
+      "slat": 4,
+      "gap": 1
+    },
+    "次臥 B|21|P": {
+      "material": "woodPanel",
+      "color": "#353434",
+      "slat": 4,
+      "gap": 1
+    }
+  },
+  "doors": {
+    "color": "#3a3938"
+  },
+  "windows": {
+    "frameColor": "#1e1e1e",
+    "metalFrame": true
+  },
+  "baseboard": "#3a3938",
+  "baseboardHeight": 6,
+  "materials": {
+    "wood": "#7d766f",
+    "woodDark": "#2a2a2a",
+    "fabric": "#3a3a3a",
+    "fabricAlt": "#7a7774",
+    "accent": "#6b5f57",
+    "leather": "#1f1f1f",
+    "metal": {
+      "color": "#1e1e1e",
+      "metalness": 0.6,
+      "roughness": 0.4
+    },
+    "cabinet": {
+      "color": "#6d6b68"
+    },
+    "countertop": {
+      "color": "#2a2a2a",
+      "texture": "marble"
+    },
+    "bedding": "#b8b6b2",
+    "pot": "#d9d7d3",
+    "curtain": "#4a4a4a",
+    "lampshade": {
+      "color": "#f4f2ee",
+      "emissive": "#ffd9aa",
+      "emissiveIntensity": 1.0
+    }
+  },
+  "furniture": {
+    "sofa": "boxy",
+    "sofaMaterial": "leather",
+    "legs": "plinth",
+    "chair": "solid",
+    "bed": "platform",
+    "tableTop": "stone",
+    "handles": "none"
+  },
+  "models": {
+    "sofa": [
+      {
+        "id": "local:abo_B07BWJCPMV",
+        "if": {
+          "chaise": true
+        }
+      }
+    ],
+    "coffee_table": "local:abo_B07TPNG61L",
+    "chair": "local:abo_B08568YKWY"
+  },
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#7a7774",
+      "accent": "#6a6764",
+      "pattern": "solid"
+    },
+    "plants": false,
+    "curtains": {
+      "enabled": true,
+      "color": "#4a4a4a",
+      "sheer": false,
+      "length": "floor",
+      "sheerLayer": "#f2f1ef"
+    },
+    "pendant": "linear",
+    "artPalette": [
+      "#262626",
+      "#7d766f",
+      "#f0efed",
+      "#2b3a5c"
+    ],
+    "bookColors": [
+      "#262626",
+      "#6d6b68",
+      "#f0efed",
+      "#2b3a5c",
+      "#7d766f"
+    ],
+    "accessories": true,
+    "sofaSide": "trayTable",
+    "tableLamp": "dome",
+    "bedRunner": "diagonal",
+    "throwColor": "#2b3a5c",
+    "pillows": "plain",
+    "pillowColor": "#d9d7d3",
+    "softColors": [
+      "#3a3a3a",
+      "#6b5f57",
+      "#262626"
+    ],
+    "sofaWall": "none",
+    "bedWallArt": "none"
+  },
+  "lighting": {
+    "toneMapping": "agx",
+    "exposure": 0.95,
+    "sunIntensity": 2.4,
+    "sunColor": "#fff4e6",
+    "ambient": 0.4,
+    "environment": 0.28,
+    "hdriIntensityIndoor": 0.2,
+    "kelvin": 3500,
+    "room": {
+      "intensity": 3.2,
+      "fixture": false
+    },
+    "downlights": {
+      "enabled": true,
+      "spacing": 140,
+      "inset": 60,
+      "intensity": 1,
+      "angle": 30,
+      "trim": "#f0efed"
+    },
+    "cove": {
+      "enabled": true,
+      "rooms": [
+        "living",
+        "dining"
+      ],
+      "width": 30,
+      "drop": 12,
+      "intensity": 0.6,
+      "kelvin": 3500
+    },
+    "background": "#dcdad6",
+    "grade": {
+      "saturation": 0.88,
+      "contrast": 1.12,
+      "warmth": -0.06,
+      "tint": 0,
+      "blacks": -0.015,
+      "vignette": 0.24
+    },
+    "bloom": {
+      "strength": 0.33,
+      "radius": 0.45,
+      "threshold": 5
+    }
+  },
+  "added": [
+    {
+      "id": "style_mo_flute_1",
+      "type": "slat_panel",
+      "x": 920,
+      "y": 140,
+      "w": 70,
+      "d": 4,
+      "h": "full",
+      "rotation": 90,
+      "color": "#2c2c2c",
+      "slat": 2,
+      "gap": 0.6
+    },
+    {
+      "id": "style_mo_flute_2",
+      "type": "slat_panel",
+      "x": 920,
+      "y": 388,
+      "w": 65,
+      "d": 4,
+      "h": "full",
+      "rotation": 90,
+      "color": "#2c2c2c",
+      "slat": 2,
+      "gap": 0.6
+    }
+  ]
+}

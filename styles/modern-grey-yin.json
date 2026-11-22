@@ -1,0 +1,303 @@
+{
+  "name": "現代灰・隱（東喬參考）",
+  "description": "深炭灰礦物塗料牆（霧狀刷痕）、白底灰紋大理石電視牆、深灰木地板、天花四周降板＋暖光間接燈槽、無把手深灰櫃、黑鐵細件、臥室暖灰礦物漆、白紗簾、3000K。",
+  "palette": [
+    "#4f4c4a",
+    "#ebe9e6",
+    "#4a4541",
+    "#a07e57",
+    "#b8aea4"
+  ],
+  "references": [
+    {
+      "image": "https://dongcio.com.tw/work/21?categoryId=7&fromPage=2",
+      "note": "東喬空間設計「隱」灰白低語，12 張：客廳 1–4、玄關 5–6、電視櫃 7、走道 8、收納 9、臥室 10–12"
+    }
+  ],
+  "wall": {
+    "material": "limewash",
+    "color": "#55524f",
+    "pbr": "grey_plaster",
+    "pbrMode": "retint",
+    "pbrScale": 1.5
+  },
+  "exteriorWall": "#cfcac4",
+  "floor": {
+    "material": "wood",
+    "color": "#433d38",
+    "plankWidth": 20,
+    "variation": 0.05
+  },
+  "ceiling": {
+    "color": "#edebe7"
+  },
+  "rooms": {
+    "bedroom": {
+      "wall": {
+        "material": "limewash",
+        "color": "#b7ada3",
+        "pbr": "plastered_wall_04",
+        "pbrMode": "retint",
+        "pbrScale": 2,
+        "grooves": {
+          "spacing": 60,
+          "width": 0.5,
+          "color": "#978d84"
+        }
+      }
+    },
+    "storage": {
+      "wall": {
+        "material": "limewash",
+        "color": "#b7ada3",
+        "pbr": "plastered_wall_04",
+        "pbrMode": "retint",
+        "pbrScale": 2
+      }
+    },
+    "entry": {
+      "floor": {
+        "material": "hex",
+        "color": "#8a8886",
+        "colors": [
+          "#2c2b2a",
+          "#5e5c5a",
+          "#8f8d8a",
+          "#c9c7c3",
+          "#e4e2de"
+        ],
+        "tileSize": 22,
+        "grout": "#3b3a38"
+      }
+    },
+    "bathroom": {
+      "floor": {
+        "material": "tile",
+        "color": "#6d6a67",
+        "tileSize": 60,
+        "grout": "#58554f"
+      },
+      "wall": {
+        "material": "marble",
+        "color": "#e6e3df",
+        "tileSize": 120,
+        "pbr": false,
+        "veins": "bold"
+      }
+    },
+    "kitchen": {
+      "wall": {
+        "material": "limewash",
+        "color": "#8c8884",
+        "pbr": "grey_plaster",
+        "pbrMode": "retint",
+        "pbrScale": 1.5
+      }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#8f8b86",
+        "tileSize": 30,
+        "grout": "#6e6a65"
+      }
+    },
+    "living": {
+      "wall": {
+        "material": "limewash",
+        "color": "#55524f",
+        "pbr": "grey_plaster",
+        "pbrMode": "retint",
+        "pbrScale": 1.5,
+        "grooves": {
+          "spacing": 75,
+          "width": 0.8,
+          "color": "#2a2826"
+        }
+      }
+    }
+  },
+  "wallFaces": {
+    "客廳|1|P": {
+      "material": "marble",
+      "color": "#eeece9",
+      "tileSize": 160,
+      "pbr": false,
+      "veins": "bold"
+    }
+  },
+  "doors": {
+    "color": "#3b3937"
+  },
+  "windows": {
+    "frameColor": "#2b2a29",
+    "metalFrame": true
+  },
+  "baseboard": "#3b3835",
+  "baseboardHeight": 6,
+  "materials": {
+    "wood": "#6b625a",
+    "woodDark": "#2f2c2a",
+    "fabric": "#5c5a58",
+    "fabricAlt": "#9a9590",
+    "accent": "#8f8b87",
+    "metal": {
+      "color": "#232221",
+      "metalness": 0.6,
+      "roughness": 0.4
+    },
+    "cabinet": {
+      "color": "#4c4a48"
+    },
+    "countertop": {
+      "color": "#ebe9e6",
+      "texture": "marble"
+    },
+    "bedding": "#b3a89c",
+    "pot": "#e9e6e2",
+    "curtain": "#f1efec",
+    "lampshade": {
+      "color": "#f2ece2",
+      "emissive": "#ffc98a",
+      "emissiveIntensity": 1.0
+    }
+  },
+  "furniture": {
+    "sofa": "rounded",
+    "sofaMaterial": "fabric",
+    "legs": "plinth",
+    "chair": "upholstered",
+    "bed": "upholstered",
+    "tableTop": "stone",
+    "handles": "none"
+  },
+  "models": {
+    "coffee_table": "local:abo_B07HSG2V2Y",
+    "dining_table": {
+      "id": "local:abo_B0853Q3Z93",
+      "roles": {
+        "\"AKLKGLOCKDCAAAAAFMBAAAAAAAAAIEONGIBE\"#0": "metal",
+        "\"AKLKGLOCKDCAAAAAFMBAAAAAAAAAIEONGIBE\"#2": "metal"
+      }
+    },
+    "chair": {
+      "id": "local:abo_B08G1YWN8L",
+      "roles": {
+        "\"B08G1YWN8L_TRB_MDL_MR\"#0": "#e9e6e1",
+        "\"B08G1YWN8L_TRB_MDL_MR\"#1": "metal"
+      }
+    }
+  },
+  "decor": {
+    "rugs": false,
+    "plants": false,
+    "curtains": {
+      "enabled": true,
+      "color": "#6f6b67",
+      "sheer": false,
+      "length": "floor",
+      "sheerLayer": "#f4f2ef"
+    },
+    "pendant": "none",
+    "artPalette": [
+      "#2f2e2d",
+      "#8a8580",
+      "#e9e6e2",
+      "#a07e57"
+    ],
+    "bookColors": [
+      "#2f2e2d",
+      "#6f6b67",
+      "#e9e6e2",
+      "#a07e57",
+      "#4f4c4a"
+    ],
+    "accessories": true,
+    "diningDecor": "candles",
+    "tableLamp": "sconce",
+    "bedRunner": "throw",
+    "throwColor": "#a39e97",
+    "pillows": "plain",
+    "softColors": [
+      "#d9d5cf",
+      "#8f8b87",
+      "#b9b2aa"
+    ],
+    "sofaWall": "none",
+    "bedWallArt": "none"
+  },
+  "lighting": {
+    "toneMapping": "agx",
+    "exposure": 1.0,
+    "sunIntensity": 2.4,
+    "sunColor": "#fff0dc",
+    "ambient": 0.45,
+    "environment": 0.3,
+    "kelvin": 3000,
+    "room": {
+      "intensity": 3.5,
+      "fixture": false
+    },
+    "downlights": {
+      "enabled": true,
+      "spacing": 120,
+      "inset": 60,
+      "intensity": 1,
+      "angle": 30,
+      "trim": "#f2f0ec"
+    },
+    "cove": {
+      "enabled": true,
+      "rooms": [
+        "living",
+        "dining",
+        "entry"
+      ],
+      "width": 40,
+      "drop": 15,
+      "intensity": 1,
+      "kelvin": 3000
+    },
+    "background": "#e2e0dc",
+    "grade": {
+      "saturation": 0.93,
+      "contrast": 1.06,
+      "warmth": 0.04,
+      "tint": 0,
+      "blacks": 0,
+      "vignette": 0.2
+    },
+    "bloom": {
+      "strength": 0.33,
+      "radius": 0.45,
+      "threshold": 5
+    }
+  },
+  "added": [
+    {
+      "id": "style_yin_shelf",
+      "type": "display_shelf",
+      "x": 904,
+      "y": 375,
+      "w": 40,
+      "d": 35,
+      "h": 240,
+      "rotation": 90,
+      "frameColor": "#9a774f",
+      "backColor": "#5e5044"
+    },
+    {
+      "id": "style_yin_slats",
+      "type": "slat_panel",
+      "x": 700,
+      "y": 658,
+      "w": 120,
+      "d": 4,
+      "h": 260,
+      "rotation": 180,
+      "color": "#1f1e1d",
+      "slat": 3,
+      "gap": 1.5
+    }
+  ]
+}

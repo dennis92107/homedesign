@@ -1,0 +1,279 @@
+{
+  "name": "現代棕・序（東喬參考）",
+  "description": "棕調現代：暖棕灰牆＋深灰礦物主題牆（電視牆、沙發牆、床頭溝縫牆）、深胡桃寬板木地板、暖棕灰無把手櫃、天花階梯燈槽與圓形燈帶、櫃下燈條、墨色玻璃餐桌配胡桃木腳、棕灰布沙發、2700–2800K 暖光。",
+  "palette": [
+    "#8a8077",
+    "#5e5c5a",
+    "#4a3a2e",
+    "#6e665e",
+    "#a88b6a"
+  ],
+  "references": [
+    {
+      "image": "https://dongcio.com.tw/work/17?categoryId=7&fromPage=2",
+      "note": "東喬空間設計「序」棕調引序，13 張：客廳 1、4–8、走道 2–3、圓形燈帶 9–10、臥室 11–13"
+    }
+  ],
+  "wall": {
+    "material": "limewash",
+    "color": "#8a8077",
+    "pbr": "plastered_wall_04",
+    "pbrMode": "retint",
+    "pbrScale": 2
+  },
+  "exteriorWall": "#c9c2b9",
+  "floor": {
+    "material": "wood",
+    "color": "#3a2b21",
+    "plankWidth": 20,
+    "variation": 0.08
+  },
+  "ceiling": {
+    "color": "#d4cec6"
+  },
+  "rooms": {
+    "bathroom": {
+      "floor": {
+        "material": "tile",
+        "color": "#5e5a56",
+        "tileSize": 60,
+        "grout": "#4a4743"
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#8f877e",
+        "tileSize": 60,
+        "grout": "#7a736b"
+      }
+    },
+    "kitchen": {
+      "wall": {
+        "material": "limewash",
+        "color": "#8a8077",
+        "pbr": "plastered_wall_04",
+        "pbrMode": "retint",
+        "pbrScale": 2
+      }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#7e766d",
+        "tileSize": 30,
+        "grout": "#625b53"
+      }
+    }
+  },
+  "wallFaces": {
+    "客廳|1|P": {
+      "material": "limewash",
+      "color": "#5f5d5b",
+      "pbr": "grey_plaster",
+      "pbrMode": "retint",
+      "pbrScale": 1.5
+    },
+    "客廳|19|N": {
+      "material": "limewash",
+      "color": "#5f5d5b",
+      "pbr": "grey_plaster",
+      "pbrMode": "retint",
+      "pbrScale": 1.5
+    },
+    "次臥 A|9|P": {
+      "material": "limewash",
+      "color": "#5a5856",
+      "pbr": "grey_plaster",
+      "pbrMode": "retint",
+      "pbrScale": 1.5,
+      "grooves": {
+        "spacing": 45,
+        "width": 0.6,
+        "color": "#3a3836"
+      }
+    },
+    "次臥 B|21|P": {
+      "material": "limewash",
+      "color": "#5a5856",
+      "pbr": "grey_plaster",
+      "pbrMode": "retint",
+      "pbrScale": 1.5,
+      "grooves": {
+        "spacing": 45,
+        "width": 0.6,
+        "color": "#3a3836"
+      }
+    }
+  },
+  "doors": {
+    "color": "#5c534b"
+  },
+  "windows": {
+    "frameColor": "#2e2a27",
+    "metalFrame": true
+  },
+  "baseboard": "#4a3a2e",
+  "baseboardHeight": 6,
+  "materials": {
+    "wood": "#5a4535",
+    "woodDark": "#3a2c22",
+    "fabric": "#6c635a",
+    "fabricAlt": "#8c8278",
+    "accent": "#a88b6a",
+    "metal": {
+      "color": "#3e352d",
+      "metalness": 0.7,
+      "roughness": 0.4
+    },
+    "cabinet": {
+      "color": "#6e665e"
+    },
+    "countertop": {
+      "color": "#2a2826",
+      "roughness": 0.15
+    },
+    "bedding": "#b8ab9c",
+    "pot": "#d8d0c6",
+    "curtain": "#8a7f74",
+    "lampshade": {
+      "color": "#f2e6d2",
+      "emissive": "#ffc488",
+      "emissiveIntensity": 1.0
+    }
+  },
+  "furniture": {
+    "sofa": "boxy",
+    "sofaMaterial": "fabric",
+    "legs": "plinth",
+    "chair": "upholstered",
+    "bed": "upholstered",
+    "tableTop": "glass",
+    "handles": "none"
+  },
+  "models": {
+    "sofa": [
+      {
+        "id": "local:abo_B07B4MG9CQ",
+        "if": {
+          "chaise": true
+        }
+      }
+    ],
+    "dining_table": false
+  },
+  "decor": {
+    "rugs": false,
+    "plants": false,
+    "curtains": {
+      "enabled": true,
+      "color": "#5e5852",
+      "sheer": false,
+      "length": "floor",
+      "type": "blinds"
+    },
+    "pendant": "none",
+    "artPalette": [
+      "#3a2c22",
+      "#8a8077",
+      "#d8d0c6",
+      "#a88b6a"
+    ],
+    "bookColors": [
+      "#3a2c22",
+      "#6e665e",
+      "#d8d0c6",
+      "#a88b6a",
+      "#5a4535"
+    ],
+    "accessories": true,
+    "tableLamp": "ph",
+    "bedRunner": "throw",
+    "throwColor": "#cfc6ba",
+    "pillows": "plain",
+    "softColors": [
+      "#d8d0c6",
+      "#a88b6a",
+      "#8a8077"
+    ],
+    "sofaWall": "small",
+    "artKind": "texture"
+  },
+  "lighting": {
+    "toneMapping": "agx",
+    "exposure": 0.82,
+    "sunIntensity": 1.5,
+    "sunColor": "#ffe8cc",
+    "ambient": 0.3,
+    "environment": 0.22,
+    "kelvin": 2800,
+    "room": {
+      "intensity": 2.6,
+      "fixture": false
+    },
+    "downlights": {
+      "enabled": true,
+      "spacing": 140,
+      "inset": 60,
+      "intensity": 1,
+      "angle": 30,
+      "trim": "#2a2623"
+    },
+    "cove": {
+      "enabled": true,
+      "rooms": [
+        "living",
+        "dining",
+        "bedroom"
+      ],
+      "width": 35,
+      "drop": 15,
+      "intensity": 1,
+      "kelvin": 2700
+    },
+    "background": "#d9d4cd",
+    "hdriIntensityIndoor": 0.14,
+    "hdriIntensity": 0.45,
+    "grade": {
+      "saturation": 0.97,
+      "contrast": 1.08,
+      "warmth": 0.12,
+      "tint": 0,
+      "blacks": -0.01,
+      "vignette": 0.24
+    },
+    "bloom": {
+      "strength": 0.38,
+      "radius": 0.5,
+      "threshold": 5
+    }
+  },
+  "added": [
+    {
+      "id": "style_xu_ring_living",
+      "type": "ring_light",
+      "x": 770,
+      "y": 280,
+      "w": 160,
+      "d": 160
+    },
+    {
+      "id": "style_xu_ring_dining",
+      "type": "ring_light",
+      "x": 707,
+      "y": 590,
+      "w": 120,
+      "d": 120
+    },
+    {
+      "id": "style_xu_shelf",
+      "type": "display_shelf",
+      "x": 904,
+      "y": 375,
+      "w": 40,
+      "d": 35,
+      "h": 240,
+      "rotation": 90,
+      "frameColor": "#3d342c",
+      "backColor": "#4a3f36"
+    }
+  ]
+}

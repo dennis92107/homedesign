@@ -111,6 +111,45 @@ export async function exportBundle() {
   return { format: 'homedesign-bundle', version: 1, kind: store.local ? 'changes' : 'snapshot', createdAt: new Date().toISOString(), files };
 }
 
+// ---------- plain JSON files (a template or a floor plan someone sent, not a bundle) ----------
+/** 'plan' | 'style' | 'design' | null — guessed from the keys */
+export function jsonKind(o) {
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+  if (Array.isArray(o.walls) && (Array.isArray(o.rooms) || Array.isArray(o.openings))) return 'plan';
+  if (o.palette || o.wall || o.floor || o.models || o.lighting || o.materials || o.furniture?.sofa) return o.walls ? null : 'style';
+  if (o.version && (o.baseStyle || o.added || o.hiddenCategories || (o.furniture && !o.palette))) return 'design';
+  return null;
+}
+const KIND_DIR = { plan: 'plans', style: 'styles', design: 'designs' };
+/** "wabi-yu (1).json" → "wabi-yu"; null when nothing usable is left (e.g. a Chinese-only file name) */
+function slugOf(fileName) {
+  const s = String(fileName || '').split(/[\\/]/).pop().replace(/\.json$/i, '').replace(/\s*\(\d+\)$/, '')
+    .trim().replace(/\s+/g, '-').replace(/[^\w\-.]/g, '').replace(/^[-.]+|[-.]+$/g, '');
+  return s || null;
+}
+/** wrap plain JSON files into a bundle so they go through the normal import (merge, auto-register in library).
+ *  Target path: same file name as one already on the site → refresh it; else same display `name` as a library
+ *  entry → refresh that; else a new file named after the upload. */
+export async function wrapPlainJSON(list) {
+  const lib = (await readJSON('library.json')) || { plans: [], styles: [] };
+  const files = {};
+  const d = new Date(); const pad = (v) => String(v).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+  for (const { name, data } of list) {
+    const kind = jsonKind(data);
+    if (!kind) throw new Error(`${name}：看不出是樣板、平面圖還是客製層（樣板要有 palette/wall/floor，平面圖要有 walls＋rooms）`);
+    const dir = KIND_DIR[kind];
+    const entries = kind === 'design' ? lib.plans.map((p) => ({ file: 'designs/' + p.file.split('/').pop(), name: p.name })) : (lib[dir] || []);
+    const slug = slugOf(name);
+    let path = slug && entries.find((e) => e.file === `${dir}/${slug}.json`)?.file;
+    if (!path && data.name && kind !== 'design') path = entries.find((e) => e.name === data.name)?.file;
+    if (!path && kind === 'design') throw new Error(`${name}：客製層的檔名要和平面圖一樣（例如 sample-2br.json）才知道是哪個案子的`);
+    if (!path) path = `${dir}/${slug || (kind === 'plan' ? 'plan-' : 'style-') + stamp}.json`;
+    files[path] = { content: data };
+  }
+  return { format: 'homedesign-bundle', version: 1, kind: 'json', createdAt: new Date().toISOString(), files };
+}
+
 /** what importing would do, per file: 'new' | 'same' | 'update' (only the bundle changed it) | 'merge' (both sides changed) */
 export async function previewImport(bundle) {
   if (bundle?.format !== 'homedesign-bundle' || !bundle.files) throw new Error('不是 HomeDesign 變更包');

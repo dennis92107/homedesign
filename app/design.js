@@ -62,16 +62,16 @@ export const TYPE_LABELS = {
   sofa: '沙發', armchair: '單椅', chair: '椅子', ottoman: '腳凳', stool: '吧檯椅', coffee_table: '茶几', side_table: '邊几',
   dining_table: '餐桌', desk: '書桌', island: '中島', tv_cabinet: '電視櫃', sideboard: '矮櫃', wardrobe: '衣櫃', bookshelf: '書櫃',
   shoe_cabinet: '鞋櫃', nightstand: '床頭櫃', bed: '床', kitchen_counter: '廚具', fridge: '冰箱', toilet: '馬桶', vanity: '浴櫃',
-  bathtub: '浴缸', shower: '淋浴間', floor_lamp: '立燈', rug: '地毯', art: '掛畫', mirror: '鏡子', plant: '植栽', box: '方塊', cylinder: '圓柱',
+  bathtub: '浴缸', shower: '淋浴間', floor_lamp: '立燈', rug: '地毯', art: '掛畫', mirror: '鏡子', plant: '植栽', box: '方塊', cylinder: '圓柱', display_shelf: '展示層架', slat_panel: '格柵板', ring_light: '圓形燈帶',
 };
 export const CATEGORIES = {
   seating: { label: '沙發座椅', types: ['sofa', 'armchair', 'chair', 'ottoman', 'stool'] },
   tables: { label: '桌几', types: ['coffee_table', 'side_table', 'dining_table', 'desk', 'island'] },
-  storage: { label: '收納櫃體', types: ['tv_cabinet', 'sideboard', 'wardrobe', 'bookshelf', 'shoe_cabinet', 'nightstand'] },
+  storage: { label: '收納櫃體', types: ['tv_cabinet', 'sideboard', 'wardrobe', 'bookshelf', 'shoe_cabinet', 'nightstand', 'display_shelf'] },
   beds: { label: '床具', types: ['bed'] },
   kitchen: { label: '廚房', types: ['kitchen_counter', 'fridge'] },
   bath: { label: '衛浴', types: ['toilet', 'vanity', 'bathtub', 'shower'] },
-  lighting: { label: '燈具', types: ['floor_lamp'] },
+  lighting: { label: '燈具', types: ['floor_lamp', 'ring_light'] },
   decor: { label: '軟裝植栽', types: ['rug', 'art', 'mirror', 'plant', 'box', 'cylinder'] },
 };
 export function categoryOf(type) {
@@ -105,6 +105,7 @@ export function effective(plan, style, design) {
   const hiddenCats = new Set(d.hiddenCategories || []);
   const items = [
     ...(plan.furniture || []).map((it, i) => ({ ...it, id: itemId(it, i), origin: 'plan' })),
+    ...(s.added || []).map((it) => ({ ...it, origin: 'style' })), // style-specific pieces (e.g. lit shelving of a reference design)
     ...(d.added || []).map((it) => ({ ...it, origin: 'added' })),
   ];
   const out = [];
@@ -127,6 +128,6 @@ export function removedItems(plan, design) {
 }
 
 export const SURFACE_TYPES = {
-  floor: [['wood', '木地板'], ['herringbone', '人字拼'], ['tile', '磁磚'], ['marble', '大理石'], ['concrete', '水泥/磐多魔'], ['terrazzo', '水磨石'], ['carpet', '地毯']],
+  floor: [['wood', '木地板'], ['herringbone', '人字拼'], ['tile', '磁磚'], ['hex', '六角磚'], ['marble', '大理石'], ['concrete', '水泥/磐多魔'], ['terrazzo', '水磨石'], ['carpet', '地毯']],
   wall: [['paint', '油漆'], ['limewash', '灰泥/礦物漆'], ['concrete', '清水模'], ['brick', '紅磚'], ['woodPanel', '木格柵'], ['tile', '磁磚'], ['marble', '大理石']],
 };

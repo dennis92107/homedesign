@@ -43,8 +43,9 @@ export function surfaceMaterial(spec = {}, fallback = '#cccccc', { surface = 'fl
     case 'wood': map = TX.planks({ color, plankWidth: spec.plankWidth || 18, variation: spec.variation ?? 0.12 }); rough ??= 0.55; break;
     case 'herringbone': map = TX.herringbone({ color, plankWidth: spec.plankWidth || 10, plankLength: spec.plankLength || 50, variation: spec.variation ?? 0.14 }); rough ??= 0.5; break;
     case 'tile': map = TX.tiles({ color, grout: spec.grout || TX.shade(color, -0.25), tileSize: spec.tileSize || 60 }); rough ??= 0.3; break;
-    case 'marble': map = TX.marble({ color, tileSize: spec.tileSize || 80, grout: spec.grout || TX.shade(color, -0.12) }); rough ??= 0.15; break;
+    case 'marble': map = TX.marble({ color, tileSize: spec.tileSize || 80, grout: spec.grout || TX.shade(color, -0.12), veins: spec.veins, veinColor: spec.veinColor }); rough ??= 0.15; break;
     case 'concrete': map = TX.concrete({ color }); rough ??= 0.8; break;
+    case 'hex': map = TX.hexTiles({ color, colors: spec.colors, grout: spec.grout || TX.shade(color, -0.3), tileSize: spec.tileSize || 20 }); rough ??= 0.4; break;
     case 'terrazzo': map = TX.terrazzo({ color, chips: spec.chips || undefined }); rough ??= 0.35; break;
     case 'carpet': map = TX.carpet({ color }); rough ??= 1; break;
     case 'limewash': map = TX.limewash({ color }); rough ??= 0.95; break;
@@ -110,7 +111,15 @@ export function buildRoleMaterials(style) {
     out[role] = makeRole({ ...def, ...(s || {}) }, role);
   }
   for (const [role, s] of Object.entries(src)) if (!out[role]) out[role] = makeRole(typeof s === 'string' ? { color: s } : s, role);
-  out.glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.02, metalness: 0, transmission: 1, ior: 1.5, thickness: 0.006, transparent: true, opacity: 1, side: THREE.DoubleSide });
+  // realtime glass: plain alpha blending + environment reflection. A transmission material makes three.js render every
+  // opaque object a second time into a transmission buffer (≈4.5 ms/frame for the window panes alone); behind a window
+  // there is only the window-view background, so the look barely changes. The path tracer gets the physical glass
+  // (userData.ptMaterial, swapped in bakeProxy).
+  out.glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.02, metalness: 0, transparent: true, opacity: 0.1, depthWrite: false, side: THREE.DoubleSide, envMapIntensity: 1.2 });
+  out.glass.userData.ptMaterial = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.02, metalness: 0, transmission: 1, ior: 1.5, thickness: 0.006, transparent: true, opacity: 1, side: THREE.DoubleSide });
+  // furniture glass (glass table tops, shower screens) keeps real transmission: seen from above, the alpha-blended pane
+  // looked like milky white plastic. three.js only adds the transmission pass while such a piece is on screen.
+  out.glassClear = out.glass.userData.ptMaterial;
   out.dark = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6 });
   out.cap = new THREE.MeshStandardMaterial({ color: 0x3a3836, roughness: 0.9 });
   return out;
@@ -130,13 +139,44 @@ export function makeRole(s, role) {
   if (s.opacity != null && s.opacity < 1) { m.transparent = true; m.opacity = s.opacity; m.side = THREE.DoubleSide; }
   if (role === 'curtain') m.side = THREE.DoubleSide;
   m.userData.baseColor = s.color;
+  let spec = null;
   if (!s.image && s.pbr !== false) {
-    let spec = typeof s.pbr === 'string' ? { id: s.pbr, mode: s.pbrMode || 'retint' } : ROLE_PBR[role];
+    spec = typeof s.pbr === 'string' ? { id: s.pbr, mode: s.pbrMode || 'retint' } : ROLE_PBR[role];
     if (!spec && (s.texture === 'marble')) spec = { id: 'marble_01', mode: 'retint', roughness: s.roughness };
     if (!spec && (s.texture === 'wood' || grainOn)) spec = ROLE_PBR.wood;
     if (spec) schedule(m, spec, s.color, { roughness: spec.roughness ?? (spec.mode === 'detail' ? s.roughness : undefined) });
   }
+  // glossy surfaces without a photo roughness map get faint smudges / wipe marks: a perfectly uniform highlight reads
+  // as CG ("real spaces have entropy: fingerprints, dust, soft wear" — archviz realism tips). Same average roughness.
+  if (!spec && !s.image && m.roughness < 0.55 && s.smudge !== false && !['screen', 'mirror', 'glass'].includes(role)) {
+    m.roughnessMap = smudgeTexture(); m.roughness = Math.min(1, m.roughness / 0.74);
+  }
   return m;
+}
+let _smudge = null;
+/** tileable roughness variation (G channel ≈ 0.55–0.95, mean ≈ 0.74): soft blotches + a few wipe arcs */
+function smudgeTexture() {
+  if (_smudge) return _smudge;
+  const N = 512, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d');
+  const r = TX.rng(4242);
+  g.fillStyle = 'rgb(189,189,189)'; g.fillRect(0, 0, N, N);
+  const blob = (x, y, rad, v, a) => {
+    for (const dx of [-N, 0, N]) for (const dy of [-N, 0, N]) { // wrap → tileable
+      const gr = g.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, rad);
+      gr.addColorStop(0, `rgba(${v},${v},${v},${a})`); gr.addColorStop(1, `rgba(${v},${v},${v},0)`);
+      g.fillStyle = gr; g.fillRect(x + dx - rad, y + dy - rad, rad * 2, rad * 2);
+    }
+  };
+  for (let i = 0; i < 70; i++) blob(r() * N, r() * N, 20 + r() * 90, r() < 0.5 ? 140 : 240, 0.18 + r() * 0.2);
+  for (let i = 0; i < 25; i++) blob(r() * N, r() * N, 4 + r() * 10, r() < 0.6 ? 245 : 150, 0.35); // fingerprints / specks
+  g.lineCap = 'round';
+  for (let i = 0; i < 6; i++) { // wipe arcs (cleaning cloth)
+    const x = r() * N, y = r() * N, rad = 60 + r() * 120, a0 = r() * 6.28;
+    g.strokeStyle = `rgba(225,225,225,${0.1 + r() * 0.08})`; g.lineWidth = 10 + r() * 18;
+    g.beginPath(); g.arc(x, y, rad, a0, a0 + 0.8 + r() * 1.2); g.stroke();
+  }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.NoColorSpace; t.anisotropy = 4;
+  return (_smudge = t);
 }
 
 /** Clone a role set with per-item colour overrides: item.colors = { fabric: '#..', wood: '#..' } */
