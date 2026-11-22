@@ -862,8 +862,11 @@ async function importChanges(bundle, { confirmFirst = true } = {}) {
   setStatus(`已匯入 ${n} 個檔案，重新載入中…`);
   // a plan this site didn't have yet (e.g. the real floor plan, kept off the public site) → open it after reload
   const fresh = plan.find((p) => p.status === 'new' && /^plans\//.test(p.path));
+  // a template bundle (e.g. made by an agent from the template kit) → switch to the imported template after reload
+  const freshStyle = !fresh && plan.find((p) => p.status !== 'skip' && p.status !== 'same' && /^styles\//.test(p.path));
   const u = new URL(location);
   if (fresh) { u.searchParams.set('plan', fresh.path); u.searchParams.delete('style'); }
+  if (freshStyle) { u.searchParams.set('style', freshStyle.path); u.searchParams.set('pickStyle', '1'); }
   setTimeout(() => location.replace(u), 300);
   return n;
 }
@@ -904,7 +907,9 @@ $('#clearLocalBtn').onclick = () => {
   state.view = params.get('view') || 'orbit';
   if (params.get('cut') === '0') { state.cutaway = false; $('#cutToggle').checked = false; }
   if (params.get('pbr') === '0') { settings.pbr = false; $('#pbrToggle').checked = false; }
-  await load({ planUrl, styleUrl, resetCamera: true });
+  const pickStyle = params.get('pickStyle') === '1' && state.library.styles.some((s) => s.file === styleUrl);
+  if (params.has('pickStyle')) { const u = new URL(location); u.searchParams.delete('pickStyle'); history.replaceState(null, '', u); }
+  await load({ planUrl, styleUrl, resetCamera: true, userPickedStyle: pickStyle });
   frame(state.view);
   poll();
 })();

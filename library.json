@@ -21,6 +21,10 @@
     {
       "name": "現代輕奢",
       "file": "styles/modern-luxe.json"
+    },
+    {
+      "name": "侘寂・域（東喬參考）",
+      "file": "styles/wabi-yu.json"
     }
   ]
 }

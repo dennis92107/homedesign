@@ -126,7 +126,37 @@ export async function previewImport(bundle) {
     else if (canon(cur) === canon(f.content)) status = 'same';
     else if (canon(cur) === canon(anc)) status = 'update';
     else status = 'merge';
-    out.push({ path, status, merged: cur == null ? f.content : merge3(anc, f.content, cur), incoming: f.content });
+    // library.json without a base (full snapshot, or a template bundle made by someone else): its lists are
+    // atomic arrays, so a plain merge would replace the receiver's list → union by `file` instead (incoming wins per entry)
+    const merged = cur == null ? f.content : (path === 'library.json' && !('base' in f)) ? unionLibrary(cur, f.content) : merge3(anc, f.content, cur);
+    out.push({ path, status, merged, incoming: f.content });
+  }
+  // new styles/*.json or plans/*.json not listed in any library → register them so they show up in the dropdowns
+  const isNew = (p) => out.some((it) => it.path === p && it.status === 'new');
+  const libIt = out.find((it) => it.path === 'library.json');
+  const lib = clone(libIt ? libIt.merged : ((store.local && entry('library.json')?.content) || (await readJSON('library.json')) || { plans: [], styles: [] }));
+  lib.plans ||= []; lib.styles ||= [];
+  let added = 0;
+  for (const it of out) {
+    const m = it.path.match(/^(styles|plans)\/[\w\-.]+\.json$/);
+    if (!m || !isNew(it.path) || lib[m[1]].some((e) => e.file === it.path)) continue;
+    lib[m[1]].push({ name: it.incoming?.name || it.path.split('/').pop().replace(/\.json$/, ''), file: it.path });
+    added++;
+  }
+  if (added) {
+    if (libIt) { libIt.merged = lib; if (libIt.status === 'same') libIt.status = 'merge'; }
+    else out.push({ path: 'library.json', status: 'update', merged: lib, incoming: lib });
+  }
+  return out;
+}
+function unionLibrary(cur, inc) {
+  const out = clone(cur);
+  for (const key of ['plans', 'styles']) {
+    out[key] = [...(cur[key] || [])];
+    for (const e of inc[key] || []) {
+      const i = out[key].findIndex((x) => x.file === e.file);
+      if (i >= 0) out[key][i] = { ...out[key][i], ...e }; else out[key].push(e);
+    }
   }
   return out;
 }

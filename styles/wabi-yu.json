@@ -1,0 +1,147 @@
+{
+  "name": "侘寂・域（東喬參考）",
+  "description": "暖灰礦物塗料牆、淺灰橡木寬板地板、奶油白布沙發、無把手白色整面櫃＋淺橡木板、深胡桃圓餐桌點綴、灰褐落地簾＋白紗、2700–3000K 暖光。",
+  "palette": [
+    "#d0c7bc",
+    "#e4ddd1",
+    "#bca98f",
+    "#5b4434",
+    "#8b847b"
+  ],
+  "references": [
+    {
+      "image": "https://dongcio.com.tw/work/25?categoryId=7&fromPage=1",
+      "note": "東喬空間設計「域」侘寂美學，20 張：客廳 1–2,5–10、走道收納 4,11–12、主臥 13–16、次臥 17–19、全屋鳥瞰 20"
+    }
+  ],
+  "wall": {
+    "material": "limewash",
+    "color": "#d3cabf"
+  },
+  "exteriorWall": "#cfc7bc",
+  "floor": {
+    "material": "wood",
+    "color": "#b9a68d",
+    "plankWidth": 20,
+    "variation": 0.06
+  },
+  "ceiling": {
+    "color": "#ebe6de"
+  },
+  "rooms": {
+    "bedroom": {
+      "wall": {
+        "material": "limewash",
+        "color": "#cec5b9"
+      }
+    },
+    "bathroom": {
+      "floor": {
+        "material": "tile",
+        "color": "#cfc8be",
+        "tileSize": 60,
+        "grout": "#b8b0a5"
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#ddd7ce",
+        "tileSize": 60,
+        "grout": "#c6bfb5"
+      }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#c3bbb0",
+        "tileSize": 30,
+        "grout": "#a69e93"
+      }
+    }
+  },
+  "doors": {
+    "color": "#c9b59b"
+  },
+  "windows": {
+    "frameColor": "#34302c",
+    "metalFrame": true
+  },
+  "baseboard": "#c9c0b5",
+  "baseboardHeight": 6,
+  "materials": {
+    "wood": "#c4ae90",
+    "woodDark": "#5b4434",
+    "fabric": "#e4ddd1",
+    "fabricAlt": "#8b847b",
+    "accent": "#b8ab9b",
+    "metal": {
+      "color": "#2e2b28",
+      "metalness": 0.4,
+      "roughness": 0.6
+    },
+    "cabinet": {
+      "color": "#e9e4dc"
+    },
+    "countertop": {
+      "color": "#e8e5e0",
+      "texture": "marble"
+    },
+    "bedding": "#cbbfb0",
+    "pot": "#d6ccbf",
+    "lampshade": {
+      "color": "#efe6d6",
+      "emissive": "#ffc98a",
+      "emissiveIntensity": 1.0
+    }
+  },
+  "furniture": {
+    "sofa": "rounded",
+    "sofaMaterial": "fabric",
+    "legs": "plinth",
+    "chair": "spindle",
+    "bed": "upholstered",
+    "tableTop": "wood",
+    "handles": "none"
+  },
+  "models": {},
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#8f8a84",
+      "accent": "#817c76",
+      "pattern": "solid"
+    },
+    "plants": false,
+    "curtains": {
+      "enabled": true,
+      "color": "#9a9289",
+      "sheer": false,
+      "length": "floor"
+    },
+    "pendant": "globe",
+    "artPalette": [
+      "#2f3430",
+      "#5b4434",
+      "#cfc6bb",
+      "#8b847b"
+    ],
+    "bookColors": [
+      "#cfc6bb",
+      "#8b847b",
+      "#e4ddd1",
+      "#5b4434",
+      "#b9a68d"
+    ]
+  },
+  "lighting": {
+    "exposure": 1.0,
+    "sunIntensity": 2.6,
+    "sunColor": "#ffe6c8",
+    "ambient": 0.5,
+    "environment": 0.3,
+    "room": {
+      "color": "#ffd09a",
+      "intensity": 3.5
+    },
+    "background": "#e7e2da"
+  }
+}
