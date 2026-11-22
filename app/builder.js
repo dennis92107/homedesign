@@ -290,7 +290,7 @@ export function buildScene(plan, style, opts = {}) {
         pl.userData.realtimeOnly = true; pl.position.y = 1.5; pl.userData.base = (roomLight.intensity ?? 4) * 0.5; pl.intensity = pl.userData.base;
       }
     }
-    lt.ceilingMat = cmat; lt.walls = plan.walls || []; lt.extT = plan.exteriorThickness || 20; lt.defT = defT;
+    lt.ceilingMat = cmat; lt.walls = plan.walls || []; lt.openings = plan.openings || []; lt.extT = plan.exteriorThickness || 20; lt.defT = defT;
     if (lt.downlights || lt.cove) addRoomFixtures({ room, opts: lt, H, groups });
     if (lt.skirting) addSkirting({ room, opts: lt, groups });
 

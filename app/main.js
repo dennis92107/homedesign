@@ -22,6 +22,7 @@ import { emptyDesign, designPathFor, effective, merge3 } from './design.js';
 import { createEditor } from './editor.js';
 import { createPlanEditor } from './planEditor.js';
 import { createFurnitureDrag } from './furnitureDrag.js';
+import { createPerson } from './person.js';
 import { store, detectMode, readText, writeJSON, pendingChanges, clearLocal, exportBundle, previewImport, applyImport, wrapPlainJSON } from './store.js';
 
 const $ = (s) => document.querySelector(s);
@@ -216,6 +217,7 @@ function rebuild() {
   if (!baker.result || state.bakeAttach === 'mismatch') restoreBakeCache();
   applyLighting(); applyVisibility(); applyReflections();
   if (settings.pbr) applyModels(built, () => state.built === built).then(() => { if (state.built === built) { applyLampGlow(); accum.markDirty(); ptScene(); updateHighlight(); } }); // models arrived → restart still-frame accumulation
+  person.sync(); // keep the 170 cm figure on a free spot of the (possibly edited) plan
   ptScene();
   updateHighlight();
   editor?.refresh();
@@ -791,6 +793,13 @@ const furnDrag = createFurnitureDrag({
   ptOn: () => pt.on,
   planEditorVisible: () => !!planEditor?.visible,
 });
+// 170 cm scale figure (顯示 → 170 cm 人形): draggable, kept out of walls/furniture with the walk-mode collision
+const person = createPerson({
+  scene, renderer, camera, viewport, state, select, setStatus,
+  ptOn: () => pt.on,
+  planEditorVisible: () => !!planEditor?.visible,
+  onChange: () => { accum.markDirty(); markShadowDirty(); if (pt.on) ptScene(); },
+});
 renderer.domElement.addEventListener('dblclick', (e) => {
   if (state.view === 'walk' || !state.built) return;
   const r = renderer.domElement.getBoundingClientRect();
@@ -1129,6 +1138,7 @@ const bindToggle = (id, key, fn = applyVisibility) => { const el = $(id); el.che
 bindToggle('#cutToggle', 'cutaway', () => rebuild());
 bindToggle('#labelToggle', 'showLabels'); bindToggle('#underlayToggle', 'showUnderlay');
 bindToggle('#aoToggle', 'ao', () => {});
+$('#personToggle').checked = person.on; $('#personToggle').onchange = (e) => person.setOn(e.target.checked);
 $('#accumToggle').onchange = (e) => { accum.enabled = e.target.checked; };
 $('#reflectToggle').onchange = (e) => { state.reflect = e.target.checked; applyReflections(); };
 $('#gradeToggle').onchange = (e) => { post.enabled = e.target.checked; accum.markDirty(); if (pt.on && pathTracer) pathTracer.renderSample(); };
@@ -1294,6 +1304,7 @@ function renderFrame() {
   // while walking they are hard to see anyway, and the still-frame average fades them in within a few frames
   { const on = !!state.reflActive && (accum.samples > 0 || !accum.enabled); if (reflections.pass.enabled !== on) { reflections.pass.enabled = on; renderPass.enabled = !on; } }
   composer.render(); accum.after();
+  person.render(); // 170 cm figure: height label + shoulder circle
   furnDrag.render(); // drag helpers (footprint, rotate ring, wall distances) on top
 }
 /**
@@ -1572,4 +1583,4 @@ function setSize(w, h) {
   gtao.setSize(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
   camera.aspect = w / h; camera.updateProjectionMatrix(); ptCamera();
 }
-window.app = { rtAE, settleExposure, pt, ptMeter: () => pt.lastTarget && post.meter(renderer, pt.lastTarget.texture), autoExposure: AUTO_EXPOSURE, reflections, applyReflections, settleLights, windowView, shots: () => import('./shots.js'), post, photo: { set: setPhotoParams, toggle: setPhoto, get state() { return { ...photo }; } }, frameMs, baker, startBake, bakeScales, bakeTune: (hemiK, fillK) => { BAKED_HEMI = hemiK; BAKED_FILL = fillK; applyLighting(); }, accum, zfight, store, exportBundle, importChanges, pendingChanges, setSize, composer, gtao, commit, select, pickAt, editor: () => editor, state, frame, load, rebuild, enterWalkAt, camera, orbit, scene, renderer, walk, snap, ptSamples, renderShot, setPT, applyLighting, assetStats, get pathTracer() { return pathTracer; } };
+window.app = { person, rtAE, settleExposure, pt, ptMeter: () => pt.lastTarget && post.meter(renderer, pt.lastTarget.texture), autoExposure: AUTO_EXPOSURE, reflections, applyReflections, settleLights, windowView, shots: () => import('./shots.js'), post, photo: { set: setPhotoParams, toggle: setPhoto, get state() { return { ...photo }; } }, frameMs, baker, startBake, bakeScales, bakeTune: (hemiK, fillK) => { BAKED_HEMI = hemiK; BAKED_FILL = fillK; applyLighting(); }, accum, zfight, store, exportBundle, importChanges, pendingChanges, setSize, composer, gtao, commit, select, pickAt, editor: () => editor, state, frame, load, rebuild, enterWalkAt, camera, orbit, scene, renderer, walk, snap, ptSamples, renderShot, setPT, applyLighting, assetStats, get pathTracer() { return pathTracer; } };

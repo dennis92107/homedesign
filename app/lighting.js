@@ -201,18 +201,58 @@ export function addSkirting({ room, opts, groups }) {
   const glow = glowMaterial(kelvinColor(sk.kelvin), 2.2);
   for (let i = 0; i < n; i++) {
     const p = poly[i], q = poly[(i + 1) % n];
-    const w = wallAlong(p, q, opts.walls || []); if (!w) continue;
     const dx = q[0] - p[0], dy = q[1] - p[1]; const L = Math.hypot(dx, dy); if (L < 40) continue;
     const ux = dx / L, uy = dy / L; let nx = -uy, ny = ux;
     const mid = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
     if (!inPoly(poly, [mid[0] + nx, mid[1] + ny])) { nx = -nx; ny = -ny; }
-    const t = w.thickness || (w.exterior ? opts.extT || 20 : opts.defT || 12);
-    const off = t / 2 + 1.2; // 1.2 cm off the wall face
-    const strip = new THREE.Mesh(new THREE.BoxGeometry(cmToM(L - t - 4), cmToM(sk.height), 0.008), glow);
-    strip.position.set(cmToM(mid[0] + nx * off), cmToM(sk.height / 2 + 0.3), cmToM(mid[1] + ny * off));
-    strip.rotation.y = -Math.atan2(uy, ux); strip.userData.lightGlow = true;
-    groups.floors.add(strip); // floor-level: stays visible in the dollhouse view
+    // only where a wall really stands: a room edge can be walled for part of its length only
+    // (e.g. a corridor opening into the living room) — the strip must stop at the wall end and at doors
+    for (const [s0, s1, t] of walledSpans(p, q, L, opts)) {
+      const len = s1 - s0; if (len < 15) continue;
+      const sm = (s0 + s1) / 2, off = t / 2 + 1.2; // 1.2 cm off the wall face
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(cmToM(len), cmToM(sk.height), 0.008), glow);
+      strip.position.set(cmToM(p[0] + ux * sm + nx * off), cmToM(sk.height / 2 + 0.3), cmToM(p[1] + uy * sm + ny * off));
+      strip.rotation.y = -Math.atan2(uy, ux); strip.userData.lightGlow = true;
+      groups.floors.add(strip); // floor-level: stays visible in the dollhouse view
+    }
   }
+}
+
+/** parts [s0, s1, thickness] (cm along polygon edge p→q) that have a wall face behind them,
+ *  minus door / floor-level openings; trimmed at the room corners (perpendicular wall face) and at free wall ends */
+function walledSpans(p, q, L, opts) {
+  const walls = opts.walls || [], openings = opts.openings || [];
+  const ux = (q[0] - p[0]) / L, uy = (q[1] - p[1]) / L;
+  const along = (pt) => (pt[0] - p[0]) * ux + (pt[1] - p[1]) * uy;
+  const spans = [], cuts = [];
+  walls.forEach((w, wi) => {
+    if (w.railing) return;
+    const [ax, ay] = w.a, [bx, by] = w.b; const wl = Math.hypot(bx - ax, by - ay); if (wl < 1) return;
+    const wx = (bx - ax) / wl, wy = (by - ay) / wl;
+    if (Math.abs(wx * ux + wy * uy) < 0.995) return; // not parallel
+    const off = (pt) => Math.abs((pt[0] - ax) * -wy + (pt[1] - ay) * wx);
+    if (off(p) > 6 || off(q) > 6) return;
+    const sa = along(w.a), sb = along(w.b);
+    const lo = Math.max(0, Math.min(sa, sb)), hi = Math.min(L, Math.max(sa, sb)); if (hi - lo < 1) return;
+    const t = w.thickness || (w.exterior ? opts.extT || 20 : opts.defT || 12);
+    spans.push([lo, hi, t]);
+    for (const o of openings) {
+      if (o.wall !== wi || !(o.type === 'door' || (o.sill || 0) < 5)) continue; // doors + floor-level windows
+      const c = Math.min(sa, sb) === sa ? sa + o.at : sa - o.at; // opening centre along p→q
+      cuts.push([c - (o.width || 90) / 2 - 3, c + (o.width || 90) / 2 + 3]); // + frame/trim
+    }
+  });
+  if (!spans.length) return [];
+  spans.sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const s of spans) { const m = merged[merged.length - 1]; if (m && s[0] <= m[1] + 1) { m[1] = Math.max(m[1], s[1]); m[2] = Math.max(m[2], s[2]); } else merged.push([...s]); }
+  // corner at a polygon vertex → stop at the perpendicular wall's face; free wall end → just inside the wall end
+  const trimmed = merged.map(([a, b, t]) => [a <= 2 ? a + t / 2 + 2 : a + 2, b >= L - 2 ? b - t / 2 - 2 : b - 2, t]);
+  let out = trimmed;
+  for (const [c0, c1] of cuts) {
+    out = out.flatMap(([a, b, t]) => (c1 <= a || c0 >= b) ? [[a, b, t]] : [[a, Math.min(b, c0), t], [Math.max(a, c1), b, t]].filter(([x, y]) => y - x > 0));
+  }
+  return out;
 }
 
 /** is there a wall running along polygon edge p→q (cm)? */
