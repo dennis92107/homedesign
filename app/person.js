@@ -13,7 +13,17 @@
 //   場景重建（改格局、別人存檔）後重新檢查，位置失效就就近找空地，再不行回到漫遊起點／最大房間中央。
 // 人形放在主場景（不屬於 built.root），重建不會被刪；不進烘焙；真實渲染（路徑追蹤）會一起算進去（只 1 種材質）。
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { penetration, resolveCollision, pointInPoly, polygonArea, centroid } from './builder.js';
+
+// 假人模型：GDQuest「Mannequiny」（CC BY 4.0，見 docs/CREDITS.md；OpenGameArt 免登入下載）。
+// 模型是 T 字姿勢＋骨架動畫：載入後套 POSE 動畫的第一格（手自然下垂），把蒙皮結果「烘」成一般靜態網格
+// （路徑追蹤 bakeProxy、點選、包圍盒都只認靜態頂點），再等比縮到 170 cm、腳底貼地、置中，全部換成同一個材質。
+// MODEL_TURN = 模型原本面向轉到 +z 要轉幾度。檔案不在或載入失敗就用下面的程序假人。
+const MODEL_URL = 'assets/models/mannequiny.glb';
+const MODEL_TURN = 0;
+const POSE = 'idle';
+const HIDE_PARTS = []; // 要拿掉的零件（材質名），例如耳機
 
 const H = 1.70;
 const P = { shoulder: 0.818, chin: 0.870, elbow: 0.630, wrist: 0.485, hip: 0.530, knee: 0.285, ankle: 0.039, shoulderW: 0.259, hipW: 0.191, footL: 0.152, footW: 0.055 };
@@ -44,9 +54,29 @@ function buildFigure(mat) {
   add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 16), 0, y(P.chin) - 0.03);                             // neck
   const headH = H - y(P.chin);                                                                             // top of head → chin ≈ 22 cm
   add(new THREE.SphereGeometry(1, 28, 20), 0, H - headH / 2, 0.005, [0.078, headH / 2, 0.098]);           // head
-  add(new THREE.SphereGeometry(1, 12, 8), 0, H - headH * 0.55, 0.098, [0.014, 0.025, 0.02]);             // nose: shows which way it faces
   g.traverse((o) => { o.userData.person = true; });
   return g;
+}
+
+/** pose a skinned glTF with the first frame of an animation and bake it into plain static meshes (world space of the glTF scene) */
+function bakePose(gltf, poseName) {
+  const root = gltf.scene;
+  const clip = gltf.animations?.find((a) => a.name === poseName);
+  if (clip) { const mixer = new THREE.AnimationMixer(root); mixer.clipAction(clip).play(); mixer.setTime(0); }
+  root.updateMatrixWorld(true);
+  const out = new THREE.Group(); const v = new THREE.Vector3();
+  root.traverse((o) => {
+    if (!o.isMesh || HIDE_PARTS.includes(o.material?.name)) return;
+    const src = o.geometry, P = src.attributes.position;
+    const pos = new Float32Array(P.count * 3);
+    if (o.isSkinnedMesh) o.skeleton.update();
+    for (let i = 0; i < P.count; i++) { o.getVertexPosition(i, v); v.applyMatrix4(o.matrixWorld); pos.set([v.x, v.y, v.z], i * 3); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    if (src.index) g.setIndex(src.index.clone());
+    g.computeVertexNormals();
+    const m = new THREE.Mesh(g); m.name = o.material?.name || o.name; out.add(m);
+  });
+  return out;
 }
 
 /**
@@ -55,10 +85,22 @@ function buildFigure(mat) {
 export function createPerson(api) {
   const { scene, renderer, camera, viewport, state } = api;
   const dom = renderer.domElement;
-  const mat = new THREE.MeshStandardMaterial({ color: '#d8d2c8', roughness: 0.78, metalness: 0 }); // matte "scale figure" grey
-  const fig = buildFigure(mat);
+  const mat = new THREE.MeshStandardMaterial({ color: '#e6e3de', roughness: 0.55, metalness: 0 }); // satin off-white, like a store mannequin
+  const fig = new THREE.Group(); fig.add(buildFigure(mat));
   fig.visible = false; fig.name = 'person170';
   scene.add(fig);
+  // swap in the mannequin model when it is there (same material: one slot in the path tracer, consistent look)
+  new GLTFLoader().loadAsync(MODEL_URL).then((gltf) => {
+    const body = bakePose(gltf, POSE); body.rotation.y = MODEL_TURN * D2R; body.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(body); const size = box.getSize(new THREE.Vector3());
+    if (!(size.y > 0)) return;
+    const k = H / size.y; body.scale.setScalar(k);
+    body.position.set(-(box.min.x + box.max.x) / 2 * k, -box.min.y * k, -(box.min.z + box.max.z) / 2 * k);
+    body.traverse((o) => { if (o.isMesh) { o.material = mat; o.castShadow = true; o.receiveShadow = true; } o.userData.person = true; });
+    const wrap = new THREE.Group(); wrap.add(body);
+    fig.clear(); fig.add(wrap); fig.updateMatrixWorld(true);
+    api.onChange();
+  }).catch(() => {}); // not downloaded yet → keep the procedural figure
 
   // overlay (not in the scene: not path traced, not pickable): 44 cm shoulder circle + facing tick
   const overlay = new THREE.Scene();

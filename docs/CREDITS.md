@@ -4,6 +4,7 @@
 |---|---|---|
 | PBR 材質、HDRI 天空、多數家具模型（執行時串流） | [Poly Haven](https://polyhaven.com) | CC0 |
 | `assets/models/glam_velvet_sofa.glb` 絲絨三人沙發 | Wayfair LLC / Eric Chadwick，經 [Khronos glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/GlamVelvetSofa) | CC BY 4.0（需標示出處） |
+| `assets/models/mannequiny.glb` 170 cm 人形比例尺（無臉假人） | GDQuest「Mannequiny – The Open 3D Mannequin」0.4.0，經 [OpenGameArt](https://opengameart.org/content/mannequiny-the-open-3d-mannequin)；網頁載入時套用 idle 姿勢、縮到 170 cm、換成單一米白材質 | CC BY 4.0（需標示出處） |
 | `assets/models/sheen_chair.glb` 絲絨金屬腳單椅 | Wayfair LLC，經 [Khronos glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/SheenChair) | CC BY 4.0（需標示出處） |
 | `assets/models/abo_*.glb`、`models/abo_index.json` 免費模型庫 | [Amazon Berkeley Objects (ABO)](https://amazon-berkeley-objects.s3.amazonaws.com/index.html)，Amazon 自有品牌真實商品 | **CC BY-NC 4.0**（需標示出處、僅限非商業使用） |
 | Three.js、three-gpu-pathtracer、three-mesh-bvh、meshoptimizer（模型減面） | jsdelivr CDN | MIT |
