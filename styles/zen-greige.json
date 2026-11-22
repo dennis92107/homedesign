@@ -1,0 +1,190 @@
+{
+  "name": "淺色侘寂・暖灰（域參考）",
+  "description": "暖灰礦物塗料牆、灰橡木寬板地板、奶油布圓角沙發、灰白無把手整面高櫃＋淺橡木、深胡桃點綴、白紗落地簾、約 2850K 陰天柔光；AgX 色調＋陰天 HDRI 讓畫面接近實景照片。",
+  "palette": [
+    "#cfc4b8",
+    "#a8927b",
+    "#e3dccf",
+    "#5a4636",
+    "#3a3532"
+  ],
+  "references": [
+    {
+      "image": "https://dongcio.com.tw/work/25?fromPage=1",
+      "note": "東喬空間設計「域」侘寂美學：客廳、走道收納、臥室；牆/地板/沙發/櫃色由照片取樣後換算成材質色"
+    }
+  ],
+  "wall": {
+    "material": "limewash",
+    "color": "#cfc4b8",
+    "pbr": "painted_plaster_wall",
+    "pbrMode": "detail"
+  },
+  "exteriorWall": "#cbc1b6",
+  "floor": {
+    "material": "wood",
+    "color": "#a8927b",
+    "plankWidth": 20,
+    "variation": 0.05
+  },
+  "ceiling": {
+    "color": "#e9e3db"
+  },
+  "baseboard": "#c9bdb0",
+  "baseboardHeight": 4,
+  "rooms": {
+    "bedroom": {
+      "wall": {
+        "material": "limewash",
+        "color": "#c7baac",
+        "pbr": "painted_plaster_wall",
+        "pbrMode": "detail"
+      }
+    },
+    "bathroom": {
+      "floor": {
+        "material": "tile",
+        "color": "#cdc4b9",
+        "tileSize": 60,
+        "grout": "#b9afa4"
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#ddd6cc",
+        "tileSize": 60,
+        "grout": "#c8c0b5"
+      }
+    },
+    "kitchen": {
+      "floor": {
+        "material": "tile",
+        "color": "#cfc6bb",
+        "tileSize": 60,
+        "grout": "#bcb2a7"
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#e3ddd5",
+        "tileSize": 60,
+        "grout": "#d2cbc2"
+      }
+    },
+    "entry": {
+      "floor": {
+        "material": "tile",
+        "color": "#bfb5aa",
+        "tileSize": 60,
+        "grout": "#aca297"
+      }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#bdb4a9",
+        "tileSize": 30,
+        "grout": "#a39a8f"
+      }
+    }
+  },
+  "doors": {
+    "color": "#d8cdc0"
+  },
+  "windows": {
+    "frameColor": "#3a3633",
+    "metalFrame": true
+  },
+  "materials": {
+    "wood": {
+      "color": "#a88f76",
+      "roughness": 0.75
+    },
+    "woodDark": {
+      "color": "#5a4636",
+      "roughness": 0.6
+    },
+    "fabric": {
+      "color": "#e3dccf",
+      "roughness": 0.95
+    },
+    "fabricAlt": "#9a8f84",
+    "accent": "#b3a493",
+    "metal": {
+      "color": "#2f2b28",
+      "metalness": 0.4,
+      "roughness": 0.6
+    },
+    "cabinet": {
+      "color": "#e4e0da",
+      "roughness": 0.7
+    },
+    "countertop": {
+      "color": "#e6e2dc",
+      "texture": "marble",
+      "roughness": 0.4
+    },
+    "bedding": "#cbbfb1",
+    "pot": "#d2c8bc",
+    "lampshade": {
+      "color": "#efe6d6",
+      "emissive": "#ffcf96",
+      "emissiveIntensity": 1.0
+    }
+  },
+  "furniture": {
+    "sofa": "rounded",
+    "sofaMaterial": "fabric",
+    "legs": "plinth",
+    "chair": "spindle",
+    "bed": "upholstered",
+    "tableTop": "wood",
+    "handles": "none"
+  },
+  "models": {
+    "side_table": "side_table_01"
+  },
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#8d8177",
+      "accent": "#7f746a",
+      "pattern": "stripe"
+    },
+    "plants": false,
+    "curtains": {
+      "enabled": true,
+      "color": "#e8e4de",
+      "sheer": true,
+      "length": "floor"
+    },
+    "pendant": "globe",
+    "artPalette": [
+      "#2f3430",
+      "#5a4636",
+      "#cfc4b8",
+      "#8d8177"
+    ],
+    "bookColors": [
+      "#cfc4b8",
+      "#8d8177",
+      "#e3dccf",
+      "#5a4636",
+      "#a8927b"
+    ]
+  },
+  "lighting": {
+    "exposure": 1.0,
+    "toneMapping": "agx",
+    "sunIntensity": 2.4,
+    "sunColor": "#ffe8cc",
+    "ambient": 0.45,
+    "environment": 0.3,
+    "hdri": "kloofendal_overcast_puresky",
+    "hdriIntensity": 0.6,
+    "hdriIntensityIndoor": 0.35,
+    "background": "#e7e2da",
+    "room": {
+      "color": "#ffd8a8",
+      "intensity": 3.5
+    }
+  }
+}

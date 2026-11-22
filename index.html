@@ -168,6 +168,38 @@
   #hint { position: fixed; left: 16px; bottom: 16px; background: var(--panel); padding: 6px 10px; border-radius: 10px; font-size: 12px; color: var(--muted); border: 1px solid var(--line); }
   body.walking #hint { display: none; }
   kbd { font: 11px ui-monospace, monospace; border: 1px solid #fff5; border-radius: 4px; padding: 0 4px; }
+  /* Loading 動畫（app/loader.js）：純 CSS，main.js 還沒載完就會動 */
+  #loader { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; background: var(--bg); transition: opacity .6s ease, visibility .6s; }
+  #loader.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+  .ld-card { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .ld-plan { width: 168px; height: 126px; overflow: visible; }
+  .ld-plan path { fill: none; stroke: var(--ink); stroke-linecap: square; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ld-draw 3.6s cubic-bezier(.6,.1,.3,1) infinite both; }
+  .ld-plan .ld-out { stroke-width: 4; }
+  .ld-plan .ld-in { stroke-width: 2; opacity: .75; }
+  .ld-plan .ld-door { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: none; stroke-dashoffset: 0; opacity: 0; animation-name: ld-fill; }
+  .ld-plan rect { fill: var(--accent); opacity: 0; animation: ld-fill 3.6s ease infinite both; }
+  @keyframes ld-draw { 0% { stroke-dashoffset: 1; opacity: 1; } 38% { stroke-dashoffset: 0; } 86% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+  @keyframes ld-fill { 0%, 36% { opacity: 0; } 54%, 84% { opacity: .2; } 100% { opacity: 0; } }
+  .ld-plan .ld-door { animation-name: ld-door; }
+  @keyframes ld-door { 0%, 30% { opacity: 0; } 46%, 84% { opacity: 1; } 100% { opacity: 0; } }
+  .ld-title { font-size: 13px; font-weight: 700; letter-spacing: .42em; margin-right: -.42em; color: var(--ink); }
+  .ld-title i { display: inline-block; width: 4px; height: 4px; margin: 0 2px; border-radius: 50%; background: var(--accent); vertical-align: middle; animation: ld-dot 1.2s ease-in-out infinite; }
+  .ld-title i:nth-of-type(2) { animation-delay: .15s; } .ld-title i:nth-of-type(3) { animation-delay: .3s; }
+  @keyframes ld-dot { 0%, 60%, 100% { transform: translateY(0); opacity: .35; } 30% { transform: translateY(-5px); opacity: 1; } }
+  .ld-bar { width: 168px; height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
+  .ld-bar::after { content: ""; display: block; width: 38%; height: 100%; background: var(--accent); border-radius: inherit; animation: ld-slide 1.4s cubic-bezier(.45,0,.25,1) infinite; }
+  @keyframes ld-slide { from { transform: translateX(-100%); } to { transform: translateX(270%); } }
+  .ld-stage { font-size: 11px; letter-spacing: .08em; color: var(--muted); min-height: 1.5em; text-align: center; white-space: nowrap; }
+  .ld-stage.err { color: #c0392b; letter-spacing: 0; }
+  /* 之後換樣板／平面圖還在下載素材：縮成畫面上方的小膠囊，不擋操作 */
+  #loader.mini { inset: 16px 0 auto 0; background: none; pointer-events: none; place-items: start center; }
+  #loader.mini .ld-card { flex-direction: row; gap: 10px; padding: 7px 14px 7px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 4px 16px #0002; backdrop-filter: blur(8px); }
+  #loader.mini .ld-plan { width: 30px; height: 23px; }
+  #loader.mini .ld-out { stroke-width: 7; } #loader.mini .ld-in { stroke-width: 4; }
+  #loader.mini .ld-title { font-size: 10px; letter-spacing: .28em; margin-right: 0; }
+  #loader.mini .ld-bar { display: none; }
+  #loader.mini .ld-stage { min-height: 0; }
+  @media (prefers-reduced-motion: reduce) { #loader *, #loader *::after { animation-duration: 6s !important; } }
   @media (max-width: 760px) {
     #viewport { right: 0; bottom: 45vh; }
     aside { top: 55vh; width: 100%; border-left: 0; border-top: 1px solid var(--line); }
@@ -189,7 +221,26 @@
 </script>
 </head>
 <body>
-<div id="viewport"><div id="planEditor" hidden></div><div id="photoGrid"></div></div>
+<div id="viewport"><div id="planEditor" hidden></div><div id="photoGrid"></div>
+  <div id="loader" role="status" aria-live="polite">
+    <div class="ld-card">
+      <svg class="ld-plan" viewBox="0 0 160 120" aria-hidden="true">
+        <rect x="12" y="12" width="58" height="48" style="animation-delay:.5s"/>
+        <rect x="110" y="62" width="38" height="46" style="animation-delay:.75s"/>
+        <rect x="72" y="62" width="36" height="46" style="animation-delay:1s"/>
+        <path class="ld-out" pathLength="1" d="M10 10 H150 V110 H10 Z"/>
+        <path class="ld-in" pathLength="1" d="M70 10 V42" style="animation-delay:.25s"/>
+        <path class="ld-in" pathLength="1" d="M10 60 H52 M70 60 H150" style="animation-delay:.4s"/>
+        <path class="ld-in" pathLength="1" d="M110 60 V110" style="animation-delay:.55s"/>
+        <path class="ld-in" pathLength="1" d="M110 10 V38" style="animation-delay:.7s"/>
+        <path class="ld-door" d="M70 42 A18 18 0 0 1 52 60 M52 60 H70 V42"/>
+      </svg>
+      <div class="ld-title">LOADING<i></i><i></i><i></i></div>
+      <div class="ld-bar"></div>
+      <div class="ld-stage">Preparing 3D engine</div>
+    </div>
+  </div>
+</div>
 <button id="togglePanel" title="顯示/隱藏面板">☰</button>
 <div id="hint">拖曳旋轉 · 滾輪縮放 · 右鍵平移 · <b>雙擊地板</b>進入漫遊 · <b>點家具</b>後可直接拖曳、拉圓環轉向（<kbd>Shift</kbd> 不吸附、方向鍵微調、<kbd>R</kbd> 轉 90°、<kbd>Ctrl</kbd>+<kbd>Z</kbd> 復原）</div>
 <div id="walkHelp"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動 · <kbd>Shift</kbd> 快走 · <span class="walk-only">拖曳滑鼠轉頭 · </span><span class="photo-only">左右拖曳轉向、上下拖曳＝鏡頭位移（牆線保持垂直） · </span><kbd>Q</kbd>/<kbd>E</kbd> 轉向 · <span class="walk-only">滾輪改視角</span><span class="photo-only">滾輪改焦距</span> · <kbd>P</kbd> 攝影模式 · <kbd>Esc</kbd> 離開</div>

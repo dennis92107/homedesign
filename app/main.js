@@ -16,6 +16,7 @@ import { createPostFX } from './postfx.js';
 import { createReflections } from './reflect.js';
 import { buildScene, applyModels, resolveCollision, penetration, polygonArea } from './builder.js';
 import { hdri, assetStats, setLocalCatalog } from './assets.js';
+import { loaderStage, loaderBuilt, loaderAssets, loaderError } from './loader.js';
 import { settings } from './materials.js';
 import { emptyDesign, designPathFor, effective, merge3 } from './design.js';
 import { createEditor } from './editor.js';
@@ -25,6 +26,7 @@ import { store, detectMode, readText, writeJSON, pendingChanges, clearLocal, exp
 
 const $ = (s) => document.querySelector(s);
 const viewport = $('#viewport');
+loaderStage('Reading floor plan');
 
 // ---------- renderer ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -198,6 +200,7 @@ function applyData(plan, style, { resetCamera = false } = {}) {
   updatePanel();
   if (resetCamera || !prevBounds) frame(state.view);
   setStatus(`已更新 ${new Date().toLocaleTimeString()}`);
+  loaderBuilt();
 }
 
 /** (re)build the house with the current plan/style/view; keeps the camera */
@@ -1087,6 +1090,7 @@ function setPT(on) {
 }
 // re-sync the path tracer when streamed textures/models finish
 assetStats.listeners.add((s) => {
+  loaderAssets(s);
   accum.markDirty(); // a texture / model just streamed in
   $('#assetStatus').textContent = s.pending ? `下載真實素材中… (${s.pending})` : (s.failed ? `素材 ${s.loaded} 個（${s.failed} 個失敗，已用程序材質代替）` : (s.loaded ? `真實素材 ${s.loaded} 個已載入` : ''));
   if (!s.pending) ptScene();
@@ -1115,7 +1119,7 @@ function updatePanel() {
 }
 
 let flashTimer;
-function setStatus(msg, err = false) { const el = $('#status'); el.textContent = msg; el.classList.toggle('err', err); }
+function setStatus(msg, err = false) { const el = $('#status'); el.textContent = msg; el.classList.toggle('err', err); if (err) loaderError(msg); }
 function flash() { viewport.classList.add('flash'); clearTimeout(flashTimer); flashTimer = setTimeout(() => viewport.classList.remove('flash'), 600); }
 
 $('#planSelect').onchange = (e) => load({ planUrl: e.target.value, resetCamera: true });

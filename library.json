@@ -41,6 +41,14 @@
     {
       "name": "墨色現代・墨（東喬參考）",
       "file": "styles/ink-modern-mo.json"
+    },
+    {
+      "name": "淺色侘寂・暖灰（域參考）",
+      "file": "styles/zen-greige.json"
+    },
+    {
+      "name": "深色大地現代（序＋黃宅參考）",
+      "file": "styles/earth-dark-modern.json"
     }
   ]
 }

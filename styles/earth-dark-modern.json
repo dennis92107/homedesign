@@ -1,0 +1,208 @@
+{
+  "name": "深色大地現代（序＋黃宅參考）",
+  "description": "暖灰平光牆＋客餐廳微水泥、煙燻灰棕橡木寬板地板、深棕灰無把手整面高櫃、胡桃木與黑鐵點綴、黑石桌面、灰褐布沙發、2700K 暖光；AgX 色調＋陰天 HDRI，曝光壓低讓深色材質不被洗白。",
+  "palette": [
+    "#9a9189",
+    "#857d75",
+    "#4f453e",
+    "#7a6250",
+    "#1e1c1b"
+  ],
+  "references": [
+    {
+      "image": "https://dongcio.com.tw/work/17?fromPage=2",
+      "note": "東喬空間設計「序」：棕調微水泥/石紋主牆、深棕櫃、深木地板、燈帶"
+    },
+    {
+      "image": "https://www.100.com.tw/works/28547",
+      "note": "易介室內裝修設計「永雄卓閱黃宅」：灰牆、黑櫃、胡桃木、深灰木地板、黑石餐桌"
+    }
+  ],
+  "wall": {
+    "material": "paint",
+    "color": "#9a9189"
+  },
+  "exteriorWall": "#9a938b",
+  "floor": {
+    "material": "wood",
+    "color": "#4f453e",
+    "plankWidth": 20,
+    "variation": 0.05
+  },
+  "ceiling": {
+    "color": "#cfc8c0"
+  },
+  "baseboard": "#3e3733",
+  "baseboardHeight": 4,
+  "rooms": {
+    "living": {
+      "wall": {
+        "material": "concrete",
+        "color": "#857d75",
+        "pbr": "concrete_floor_worn_001",
+        "pbrMode": "retint"
+      }
+    },
+    "dining": {
+      "wall": {
+        "material": "concrete",
+        "color": "#857d75",
+        "pbr": "concrete_floor_worn_001",
+        "pbrMode": "retint"
+      }
+    },
+    "bathroom": {
+      "floor": {
+        "material": "tile",
+        "color": "#6f6a65",
+        "tileSize": 60,
+        "grout": "#5e5954"
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#b8b2ab",
+        "tileSize": 60,
+        "grout": "#a39d96"
+      }
+    },
+    "kitchen": {
+      "floor": {
+        "material": "tile",
+        "color": "#7d766f",
+        "tileSize": 60,
+        "grout": "#6b655f"
+      },
+      "wall": {
+        "material": "tile",
+        "color": "#c9c3bc",
+        "tileSize": 60,
+        "grout": "#b4aea7"
+      }
+    },
+    "entry": {
+      "floor": {
+        "material": "tile",
+        "color": "#6f6a65",
+        "tileSize": 60,
+        "grout": "#5e5954"
+      }
+    },
+    "balcony": {
+      "floor": {
+        "material": "tile",
+        "color": "#8f8a84",
+        "tileSize": 30,
+        "grout": "#77726c"
+      }
+    }
+  },
+  "doors": {
+    "color": "#5a5049"
+  },
+  "windows": {
+    "frameColor": "#2a2725",
+    "metalFrame": true
+  },
+  "materials": {
+    "wood": {
+      "color": "#7a6250",
+      "pbr": "black_walnut_veneer_01",
+      "roughness": 0.6
+    },
+    "woodDark": {
+      "color": "#3a2e26",
+      "roughness": 0.55
+    },
+    "fabric": {
+      "color": "#6b625c",
+      "roughness": 0.95
+    },
+    "fabricAlt": "#a59a90",
+    "leather": {
+      "color": "#4e423b",
+      "roughness": 0.5
+    },
+    "accent": "#8a6a52",
+    "metal": {
+      "color": "#1e1c1b",
+      "metalness": 0.7,
+      "roughness": 0.4
+    },
+    "stone": {
+      "color": "#2e2c2b",
+      "texture": "marble",
+      "roughness": 0.2
+    },
+    "cabinet": {
+      "color": "#3e3733",
+      "roughness": 0.65
+    },
+    "countertop": {
+      "color": "#3a3836",
+      "texture": "marble",
+      "roughness": 0.25
+    },
+    "bedding": "#a39484",
+    "pot": "#5a5550",
+    "lampshade": {
+      "color": "#f3e4cc",
+      "emissive": "#ffc27e",
+      "emissiveIntensity": 1.3
+    }
+  },
+  "furniture": {
+    "sofa": "boxy",
+    "sofaMaterial": "fabric",
+    "legs": "metal",
+    "chair": "upholstered",
+    "bed": "upholstered",
+    "tableTop": "stone",
+    "handles": "none"
+  },
+  "models": {},
+  "decor": {
+    "rugs": true,
+    "rug": {
+      "color": "#5a5552",
+      "accent": "#4a4644",
+      "pattern": "solid"
+    },
+    "plants": false,
+    "curtains": {
+      "enabled": true,
+      "color": "#8a8178",
+      "sheer": false,
+      "length": "floor"
+    },
+    "pendant": "linear",
+    "artPalette": [
+      "#1e1c1b",
+      "#7a6250",
+      "#a39b92",
+      "#d8d0c6"
+    ],
+    "bookColors": [
+      "#3a2e26",
+      "#7a6250",
+      "#a39b92",
+      "#5a5552",
+      "#1e1c1b"
+    ]
+  },
+  "lighting": {
+    "exposure": 0.9,
+    "toneMapping": "agx",
+    "sunIntensity": 2.8,
+    "sunColor": "#ffeedd",
+    "ambient": 0.4,
+    "environment": 0.3,
+    "hdri": "kloofendal_overcast_puresky",
+    "hdriIntensity": 0.6,
+    "hdriIntensityIndoor": 0.35,
+    "background": "#d9d6d2",
+    "room": {
+      "color": "#ffd09a",
+      "intensity": 4
+    }
+  }
+}
