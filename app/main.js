@@ -23,6 +23,7 @@ import { createEditor } from './editor.js';
 import { createPlanEditor } from './planEditor.js';
 import { createFurnitureDrag } from './furnitureDrag.js';
 import { createPerson } from './person.js';
+import { applySlidingDoors } from './slidingDoors.js';
 import { store, detectMode, readText, writeJSON, pendingChanges, clearLocal, exportBundle, previewImport, applyImport, wrapPlainJSON } from './store.js';
 
 const $ = (s) => document.querySelector(s);
@@ -213,6 +214,7 @@ function rebuild() {
   state.eff = eff;
   const built = buildScene(eff.plan, eff.style, { cut: cutHeight() });
   state.built = built; built.cut = cutHeight(); scene.add(built.root);
+  syncDoorBar();
   state.bakeAttach = baker.attach(built); // re-apply the lightmap when the architecture is unchanged (e.g. furniture edits)
   if (!baker.result || state.bakeAttach === 'mismatch') restoreBakeCache();
   applyLighting(); applyVisibility(); applyReflections();
@@ -221,6 +223,61 @@ function rebuild() {
   ptScene();
   updateHighlight();
   editor?.refresh();
+}
+
+// ---------- sliding doors: preview open / half / closed (per browser, never written to the plan) ----------
+const doorView = { plan: null, open: {}, target: 'all', raf: 0, timer: 0 };
+const doorKey = () => 'hd:slide:' + state.planUrl;
+function syncDoorBar() {
+  const doors = state.plan?.slidingDoors || [], bar = $('#doorBar');
+  if (doorView.plan !== state.planUrl) {
+    doorView.plan = state.planUrl; doorView.target = 'all';
+    try { doorView.open = JSON.parse(localStorage.getItem(doorKey()) || '{}'); } catch { doorView.open = {}; }
+  }
+  bar.hidden = !doors.length;
+  if (doors.length) {
+    const sel = $('#doorTarget'), sig = doors.map((d) => d.id + d.name).join('|');
+    if (sel.dataset.sig !== sig) {
+      sel.dataset.sig = sig;
+      sel.innerHTML = '<option value="all">全部拉門</option>' + doors.map((d) => `<option value="${d.id}">${d.name || d.id}</option>`).join('');
+    }
+    if (doorView.target !== 'all' && !doors.some((d) => d.id === doorView.target)) doorView.target = 'all';
+    sel.value = doorView.target;
+    applySlidingDoors(state.built, doorView.open);
+    updateDoorBar();
+  }
+}
+function updateDoorBar() {
+  const doors = state.plan?.slidingDoors || [];
+  const ids = doorView.target === 'all' ? doors.map((d) => d.id) : [doorView.target];
+  const vals = ids.map((id) => doorView.open[id] ?? 1), v = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 1;
+  $('#doorAmount').value = Math.round(v * 100);
+  $('#doorPct').textContent = vals.every((x) => x === vals[0]) ? `${Math.round(v * 100)}%` : '各自不同';
+  document.querySelectorAll('[data-door]').forEach((b) => b.classList.toggle('on', vals.every((x) => Math.abs(x - +b.dataset.door) < 0.005)));
+}
+function doorsMoved(final) {
+  applySlidingDoors(state.built, doorView.open);
+  accum.markDirty(); markShadowDirty(); updateDoorBar();
+  if (!final) return;
+  try { localStorage.setItem(doorKey(), JSON.stringify(doorView.open)); } catch {}
+  person.sync(); planEditor?.refresh(); ptScene();
+}
+/** t: 0 = closed … 1 = fully open; slides over ~0.7 s unless animate is false */
+function setDoors(t, animate = true, target = doorView.target) {
+  const doors = state.plan?.slidingDoors || [];
+  const ids = target === 'all' ? doors.map((d) => d.id) : doors.filter((d) => d.id === target).map((d) => d.id);
+  cancelAnimationFrame(doorView.raf); clearTimeout(doorView.timer);
+  const land = () => { cancelAnimationFrame(doorView.raf); clearTimeout(doorView.timer); ids.forEach((id) => { doorView.open[id] = t; }); doorsMoved(true); };
+  if (!animate || document.hidden) { land(); return; }
+  const from = Object.fromEntries(ids.map((id) => [id, doorView.open[id] ?? 1])), t0 = performance.now(), DUR = 700;
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / DUR), e = k * k * (3 - 2 * k);
+    if (k >= 1) { land(); return; }
+    ids.forEach((id) => { doorView.open[id] = from[id] + (t - from[id]) * e; });
+    doorsMoved(false); doorView.raf = requestAnimationFrame(step);
+  };
+  doorView.raf = requestAnimationFrame(step);
+  doorView.timer = setTimeout(land, DUR + 250); // a hidden pane throttles animation frames
 }
 
 // ---------- customization: commit / save ----------
@@ -1139,6 +1196,15 @@ bindToggle('#cutToggle', 'cutaway', () => rebuild());
 bindToggle('#labelToggle', 'showLabels'); bindToggle('#underlayToggle', 'showUnderlay');
 bindToggle('#aoToggle', 'ao', () => {});
 $('#personToggle').checked = person.on; $('#personToggle').onchange = (e) => person.setOn(e.target.checked);
+document.querySelectorAll('[data-door]').forEach((b) => (b.onclick = () => setDoors(+b.dataset.door)));
+$('#doorTarget').onchange = (e) => { doorView.target = e.target.value; updateDoorBar(); };
+$('#doorAmount').oninput = (e) => {
+  const t = +e.target.value / 100, doors = state.plan?.slidingDoors || [];
+  cancelAnimationFrame(doorView.raf); clearTimeout(doorView.timer);
+  for (const d of doors) if (doorView.target === 'all' || d.id === doorView.target) doorView.open[d.id] = t;
+  doorsMoved(false);
+};
+$('#doorAmount').onchange = () => doorsMoved(true);
 $('#accumToggle').onchange = (e) => { accum.enabled = e.target.checked; };
 $('#reflectToggle').onchange = (e) => { state.reflect = e.target.checked; applyReflections(); };
 $('#gradeToggle').onchange = (e) => { post.enabled = e.target.checked; accum.markDirty(); if (pt.on && pathTracer) pathTracer.renderSample(); };
@@ -1474,8 +1540,10 @@ $('#clearLocalBtn').onclick = () => {
   if (store.local) $('#liveToggle').closest('label').style.display = 'none'; // nothing to sync with on a static host
   planEditor = createPlanEditor({
     state, commit, planChanged, savePlanAs,
+    doorOpen: (id) => doorView.open[id] ?? 1,
     selectFurniture: (id) => { editor.setTab('furniture'); select({ kind: 'furniture', id }); },
   });
+  window.app && (window.app.setDoors = setDoors);
   editor = createEditor({
     state, commit, select, focusOn, rebuild, saveAsTemplate, uploadModel, importLibraryModel,
     onTab: (t) => { if (!planEditor) return; if (t === 'layout') { if (state.view !== 'top') frame('top'); planEditor.show(); } else planEditor.hide(); },

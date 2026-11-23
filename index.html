@@ -155,6 +155,15 @@
   .actions button { flex: 1; }
   #togglePanel { position: fixed; top: 12px; right: 352px; z-index: 5; background: var(--panel); transition: right .2s; }
   body.panel-hidden #togglePanel { right: 12px; }
+  #doorBar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 24px); padding: 6px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; font-size: 12px; backdrop-filter: blur(10px); }
+  #doorBar[hidden] { display: none; }
+  #doorBar b { white-space: nowrap; }
+  #doorBar select { width: auto; max-width: 150px; margin: 0; padding: 3px 6px; font-size: 12px; }
+  #doorBar button { padding: 3px 9px; font-size: 12px; white-space: nowrap; }
+  #doorBar button.on { background: #b4643c; color: #fff; border-color: #b4643c; }
+  #doorBar input { width: 90px; margin: 0; }
+  #doorPct { min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  body.plan-editing #doorBar { top: 54px; }
   #walkHelp { position: fixed; left: 16px; bottom: 16px; background: #000b; color: #fff; padding: 8px 12px; border-radius: 10px; font-size: 12px; display: none; pointer-events: none; }
   body.walking #walkHelp { display: block; }
   #walkHelp .photo-only, body.photo #walkHelp .walk-only { display: none; }
@@ -222,6 +231,11 @@
 </head>
 <body>
 <div id="viewport"><div id="planEditor" hidden></div><div id="photoGrid"></div>
+  <div id="doorBar" hidden role="group" aria-label="拉門預覽">
+    <b>拉門</b><select id="doorTarget" aria-label="選擇拉門"></select>
+    <button data-door="1">全開</button><button data-door="0.5">半開</button><button data-door="0">關上</button>
+    <input type="range" id="doorAmount" min="0" max="100" step="1" value="100" aria-label="開啟程度"><span id="doorPct">100%</span>
+  </div>
   <div id="loader" role="status" aria-live="polite">
     <div class="ld-card">
       <svg class="ld-plan" viewBox="0 0 160 120" aria-hidden="true">

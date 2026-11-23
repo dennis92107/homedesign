@@ -9,6 +9,7 @@ import { modelInstance, modelEntry, pickDefault, pickSpec, MODEL_FIT } from './a
 import { decorContext, addDecor, settleDecor, loadDecorModels } from './decor.js';
 import * as TX from './textures.js';
 import { kelvinColor, roomLighting, addRoomFixtures, addWallWash, addSkirting } from './lighting.js';
+import { buildSlidingDoors } from './slidingDoors.js';
 
 const cm = (v) => v / 100;
 
@@ -719,7 +720,9 @@ export function buildScene(plan, style, opts = {}) {
   for (const r of plan.rooms || []) for (const [x, y] of r.polygon) { xs.push(x); ys.push(y); }
   const bounds = { minX: cm(Math.min(...xs)), maxX: cm(Math.max(...xs)), minZ: cm(Math.min(...ys)), maxZ: cm(Math.max(...ys)), H };
 
-  return { root, groups, wallInfo, colliders, bounds, materials: M, modelJobs, byId };
+  const slidingDoors = buildSlidingDoors(plan, { Hcm, Hc, cut, walls: groups.walls, colliders, M });
+
+  return { root, groups, wallInfo, colliders, bounds, materials: M, modelJobs, byId, slidingDoors };
 }
 
 /** Swap procedural pieces for real glTF models (async). Returns a promise resolved when all jobs settled. */

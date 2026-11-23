@@ -3,6 +3,7 @@
 import { polygonArea, centroid } from './builder.js';
 import { TYPE_LABELS, setFurniturePatch } from './design.js';
 import { DEFAULT_SIZES } from './furniture.js';
+import { panelSpans, fixedSpan } from './slidingDoors.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const ROOM_TYPES = [['living', '客廳'], ['dining', '餐廳'], ['kitchen', '廚房'], ['bedroom', '臥室'], ['bathroom', '衛浴'], ['study', '書房'], ['entry', '玄關'], ['corridor', '走道'], ['balcony', '陽台'], ['storage', '儲藏室']];
@@ -211,6 +212,17 @@ export function createPlanEditor(api) {
         el('line', { x1: -w / 2 + 4, y1: d / 2 - 3 * k, x2: w / 2 - 4, y2: d / 2 - 3 * k, stroke: '#c96f4a', 'stroke-width': 2 * k }, g); // front edge
         if (Math.min(w, d) > 30) { const t = el('text', { x: 0, y: 4 * k, 'font-size': 11 * k, 'text-anchor': 'middle', transform: `rotate(${-(it.rotation || 0)})`, class: 'pe-ftext' }, g); t.textContent = TYPE_LABELS[it.type] || it.type; }
       }
+    }
+    // sliding doors: faint = closed position, solid = where the panels are now (follows the 拉門 preview bar)
+    const gs = el('g', { 'pointer-events': 'none' }, svg);
+    for (const d of p.slidingDoors || []) {
+      const L = dist(d.a, d.b) || 1, ux = (d.b[0] - d.a[0]) / L, uy = (d.b[1] - d.a[1]) / L, nx = -uy, ny = ux;
+      const seg = (sp, attrs) => el('line', { x1: d.a[0] + ux * sp.s + nx * sp.layer, y1: d.a[1] + uy * sp.s + ny * sp.layer, x2: d.a[0] + ux * sp.e + nx * sp.layer, y2: d.a[1] + uy * sp.e + ny * sp.layer, 'stroke-width': d.thickness ?? 3.6, ...attrs }, gs);
+      const fx = fixedSpan(d), now = panelSpans(d, api.doorOpen?.(d.id) ?? 1), color = d.color || '#c2a27c';
+      for (const sp of panelSpans(d, 0)) seg(sp, { stroke: color, 'stroke-opacity': 0.3 });
+      for (const sp of panelSpans(d, 1)) seg(sp, { stroke: color, 'stroke-opacity': 0.3, 'stroke-dasharray': `${5 * k} ${3 * k}` });
+      if (fx) seg(fx, { stroke: '#7b5f42' });
+      for (const sp of now) seg(sp, { stroke: '#a9794b' });
     }
     // room labels
     p.rooms.forEach((r, i) => {
